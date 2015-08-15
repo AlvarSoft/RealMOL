@@ -78,6 +78,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -107,6 +108,8 @@
     <Content Include="repeat.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Include="Resources\start.png" />
+    <None Include="Resources\reload.png" />
     <Content Include="understood.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

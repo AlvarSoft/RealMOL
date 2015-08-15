@@ -58,10 +58,11 @@
             // 
             // button_Launch
             // 
+            this.button_Launch.Image = global::RealMOL.Properties.Resources.start;
             this.button_Launch.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.button_Launch.Location = new System.Drawing.Point(262, 169);
             this.button_Launch.Name = "button_Launch";
-            this.button_Launch.Size = new System.Drawing.Size(110, 30);
+            this.button_Launch.Size = new System.Drawing.Size(110, 35);
             this.button_Launch.TabIndex = 2;
             this.button_Launch.Text = "¡Iniciar!";
             this.button_Launch.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -78,10 +79,11 @@
             // 
             // button_LoadDevices
             // 
+            this.button_LoadDevices.Image = global::RealMOL.Properties.Resources.reload;
             this.button_LoadDevices.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.button_LoadDevices.Location = new System.Drawing.Point(96, 169);
             this.button_LoadDevices.Name = "button_LoadDevices";
-            this.button_LoadDevices.Size = new System.Drawing.Size(160, 30);
+            this.button_LoadDevices.Size = new System.Drawing.Size(160, 35);
             this.button_LoadDevices.TabIndex = 4;
             this.button_LoadDevices.Text = "Cargar dispositivos";
             this.button_LoadDevices.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -97,7 +99,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(384, 211);
+            this.ClientSize = new System.Drawing.Size(384, 216);
             this.Controls.Add(this.button_LoadDevices);
             this.Controls.Add(this.label_Detected);
             this.Controls.Add(this.button_Launch);
