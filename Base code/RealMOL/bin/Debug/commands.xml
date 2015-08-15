@@ -589,6 +589,66 @@
             </menu>
           </page>
         </menu>
+        <menu>
+          <text>Renderizado</text>
+          <code>IGNORErendering</code>
+          <page>
+            <menu>
+              <text>Sombras</text>
+              <code>IGNOREshadows</code>
+              <page>
+                <menu>
+                  <text>Nivel</text>
+                  <code>IGNORElevel</code>
+                  <page>
+                    <command>
+                      <text>Ninguno</text>
+                      <code>DELutil.ray_shadows('none')</code>
+                    </command>
+                    <command>
+                      <text>Bajo</text>
+                      <code>DELutil.ray_shadows('light')</code>
+                    </command>
+                    <command>
+                      <text>Moderado</text>
+                      <code>DELutil.ray_shadows('medium')</code>
+                    </command>
+                    <command>
+                      <text>Pesado</text>
+                      <code>DELutil.ray_shadows('heavy')</code>
+                    </command>
+                    <command>
+                      <text>Negro</text>
+                      <code>DELutil.ray_shadows('black')</code>
+                    </command>
+                  </page>
+                </menu>
+                <menu>
+                  <text>Tipo</text>
+                  <code>IGNOREtype</code>
+                  <page>
+                    <command>
+                      <text>Mate</text>
+                      <code>DELutil.ray_shadows('matte')</code>
+                    </command>
+                    <command>
+                      <text>Suave</text>
+                      <code>DELutil.ray_shadows('soft')</code>
+                    </command>
+                    <command>
+                      <text>Oclusion</text>
+                      <code>DELutil.ray_shadows('occlusion')</code>
+                    </command>
+                    <command>
+                      <text>Oclusion-Dos</text>
+                      <code>DELutil.ray_shadows('occlusion2')</code>
+                    </command>
+                  </page>
+                </menu>
+              </page>
+            </menu>
+          </page>
+        </menu>
       </page>
     </menu>
     <command>

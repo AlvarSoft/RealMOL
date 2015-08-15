@@ -1068,6 +1068,10 @@ namespace RealMOL
                         }
                     }
                 }
+                if (tempMessage.Contains("DEL"))
+                {
+                    tempMessage = tempMessage.Substring(tempMessage.LastIndexOf("DEL") + 3);
+                }
                 message = tempMessage;
                 QuitMenu(true);
             }

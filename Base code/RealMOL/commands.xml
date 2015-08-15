@@ -603,23 +603,23 @@
                   <page>
                     <command>
                       <text>Ninguno</text>
-                      <code>util.ray_shadows('none')</code>
+                      <code>DELutil.ray_shadows('none')</code>
                     </command>
                     <command>
                       <text>Bajo</text>
-                      <code>util.ray_shadows('light')</code>
+                      <code>DELutil.ray_shadows('light')</code>
                     </command>
                     <command>
                       <text>Moderado</text>
-                      <code>util.ray_shadows('medium')</code>
+                      <code>DELutil.ray_shadows('medium')</code>
                     </command>
                     <command>
                       <text>Pesado</text>
-                      <code>util.ray_shadows('heavy')</code>
+                      <code>DELutil.ray_shadows('heavy')</code>
                     </command>
                     <command>
                       <text>Negro</text>
-                      <code>util.ray_shadows('black')</code>
+                      <code>DELutil.ray_shadows('black')</code>
                     </command>
                   </page>
                 </menu>
@@ -629,19 +629,19 @@
                   <page>
                     <command>
                       <text>Mate</text>
-                      <code>util.ray_shadows('matte')</code>
+                      <code>DELutil.ray_shadows('matte')</code>
                     </command>
                     <command>
                       <text>Suave</text>
-                      <code>util.ray_shadows('soft')</code>
+                      <code>DELutil.ray_shadows('soft')</code>
                     </command>
                     <command>
                       <text>Oclusion</text>
-                      <code>util.ray_shadows('occlusion')</code>
+                      <code>DELutil.ray_shadows('occlusion')</code>
                     </command>
                     <command>
-                      <text>Oclusion-2</text>
-                      <code>util.ray_shadows('occlusion2')</code>
+                      <text>Oclusion-Dos</text>
+                      <code>DELutil.ray_shadows('occlusion2')</code>
                     </command>
                   </page>
                 </menu>
