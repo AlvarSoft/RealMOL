@@ -414,6 +414,56 @@
           </page>
         </menu>
         <menu>
+          <text>Superficie</text>
+          <code>IGNOREsurface</code>
+          <page>
+            <menu>
+              <text>Color</text>
+              <code>surface_color</code>
+              <page>
+                <command>
+                  <text>Blanco</text>
+                  <code>,white</code>
+                </command>
+                <command>
+                  <text>Azul</text>
+                  <code>,blue</code>
+                </command>
+                <command>
+                  <text>Gris-ligero</text>
+                  <code>,grey80</code>
+                </command>
+                <command>
+                  <text>Gris</text>
+                  <code>,grey</code>
+                </command>
+                <command>
+                  <text>Predeterminado</text>
+                  <code>,-1</code>
+                </command>
+              </page>
+            </menu>
+            <menu>
+              <text>Tipo</text>
+              <code>surface_type</code>
+              <page>
+                <command>
+                  <text>Puntos</text>
+                  <code>,1</code>
+                </command>
+                <command>
+                  <text>Lineas</text>
+                  <code>,2</code>
+                </command>
+                <command>
+                  <text>Solido</text>
+                  <code>,0</code>
+                </command>
+              </page>
+            </menu>
+          </page>
+        </menu>
+        <menu>
           <text>Transparencia</text>
           <code>IGNOREtransparency</code>
           <page>
