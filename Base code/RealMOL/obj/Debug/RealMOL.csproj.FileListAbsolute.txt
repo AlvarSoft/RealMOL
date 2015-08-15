@@ -1,0 +1,35 @@
+c:\users\christian010\documents\visual studio 2013\Projects\RealMOL\RealMOL\bin\Debug\RealMOL.exe.config
+c:\users\christian010\documents\visual studio 2013\Projects\RealMOL\RealMOL\bin\Debug\RealMOL.exe
+c:\users\christian010\documents\visual studio 2013\Projects\RealMOL\RealMOL\bin\Debug\RealMOL.pdb
+c:\users\christian010\documents\visual studio 2013\Projects\RealMOL\RealMOL\obj\Debug\RealMOL.csprojResolveAssemblyReference.cache
+c:\users\christian010\documents\visual studio 2013\Projects\RealMOL\RealMOL\obj\Debug\RealMOL.Form_Main.resources
+c:\users\christian010\documents\visual studio 2013\Projects\RealMOL\RealMOL\obj\Debug\RealMOL.Properties.Resources.resources
+c:\users\christian010\documents\visual studio 2013\Projects\RealMOL\RealMOL\obj\Debug\RealMOL.csproj.GenerateResource.Cache
+c:\users\christian010\documents\visual studio 2013\Projects\RealMOL\RealMOL\obj\Debug\RealMOL.exe
+c:\users\christian010\documents\visual studio 2013\Projects\RealMOL\RealMOL\obj\Debug\RealMOL.pdb
+c:\users\christian010\documents\visual studio 2013\Projects\RealMOL\RealMOL\bin\Debug\SharpDX.dll
+c:\users\christian010\documents\visual studio 2013\Projects\RealMOL\RealMOL\bin\Debug\SharpDX.XInput.dll
+c:\users\christian010\documents\visual studio 2013\Projects\RealMOL\RealMOL\bin\Debug\SharpDX.xml
+c:\users\christian010\documents\visual studio 2013\Projects\RealMOL\RealMOL\bin\Debug\SharpDX.XInput.xml
+c:\users\christian010\documents\visual studio 2013\Projects\RealMOL\RealMOL\bin\Debug\Oculus.py
+C:\Users\Christian010\documents\visual studio 2013\Projects\RealMol\RealMOL\bin\Debug\ready.wav
+C:\Users\Christian010\documents\visual studio 2013\Projects\RealMol\RealMOL\bin\Debug\repeat.wav
+C:\Users\Christian010\documents\visual studio 2013\Projects\RealMol\RealMOL\bin\Debug\understood.wav
+C:\Users\Christian010\Documents\RealMOL\RealMOL\bin\Debug\RealMOL.exe.config
+C:\Users\Christian010\Documents\RealMOL\RealMOL\obj\Debug\RealMOL.exe
+C:\Users\Christian010\Documents\RealMOL\RealMOL\obj\Debug\RealMOL.pdb
+C:\Users\Christian010\Documents\RealMOL\RealMOL\bin\Debug\Oculus.py
+C:\Users\Christian010\Documents\RealMOL\RealMOL\bin\Debug\ready.wav
+C:\Users\Christian010\Documents\RealMOL\RealMOL\bin\Debug\repeat.wav
+C:\Users\Christian010\Documents\RealMOL\RealMOL\bin\Debug\understood.wav
+C:\Users\Christian010\Documents\RealMOL\RealMOL\bin\Debug\RealMOL.exe
+C:\Users\Christian010\Documents\RealMOL\RealMOL\bin\Debug\RealMOL.pdb
+C:\Users\Christian010\Documents\RealMOL\RealMOL\bin\Debug\SharpDX.dll
+C:\Users\Christian010\Documents\RealMOL\RealMOL\bin\Debug\SharpDX.XInput.dll
+C:\Users\Christian010\Documents\RealMOL\RealMOL\bin\Debug\SharpDX.xml
+C:\Users\Christian010\Documents\RealMOL\RealMOL\bin\Debug\SharpDX.XInput.xml
+C:\Users\Christian010\Documents\RealMOL\RealMOL\obj\Debug\RealMOL.csprojResolveAssemblyReference.cache
+C:\Users\Christian010\Documents\RealMOL\RealMOL\obj\Debug\RealMOL.Form_Main.resources
+C:\Users\Christian010\Documents\RealMOL\RealMOL\obj\Debug\RealMOL.Properties.Resources.resources
+C:\Users\Christian010\Documents\RealMOL\RealMOL\obj\Debug\RealMOL.csproj.GenerateResource.Cache
+C:\Users\Christian010\Documents\Visual Studio 2013\Projects\RealMOL\RealMOL\bin\Debug\commands.xml
