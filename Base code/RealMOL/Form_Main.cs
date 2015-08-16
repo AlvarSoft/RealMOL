@@ -117,6 +117,23 @@ namespace RealMOL
         }
 
         /*
+         * Función: IntializeSkeletonTracking
+         * Descripción: Función que inicia el seguimiento de esqueletos
+         * Autor: Christian Vargas
+         * Fecha de creación: 16/08/15
+         * Fecha de modificación: --/--/--
+         * Entradas: --
+         * Salidas: - Reconocimiento de esqueletos listo para funcionar
+         */
+        private void IntializeSkeletonTracking()
+        {
+            //Establecemos el modo de reconocimiento, lo habilitamos y señalamos la función que se encargara de manejar los frames
+            sensor.SkeletonStream.TrackingMode = SkeletonTrackingMode.Seated;
+            sensor.SkeletonStream.Enable();
+            sensor.SkeletonFrameReady += new EventHandler<SkeletonFrameReadyEventArgs>(Sensor_SkeletonFrameReady);
+        }
+
+        /*
          * Función: InitializeKinectAndSpeech
          * Descripción: Función que inicializa el Kinect junto con su motor de voz
          * Autor: Christian Vargas
@@ -143,6 +160,8 @@ namespace RealMOL
             }
             //Se inicia el sensor
             sensor.Start();
+            //Se inicializa el reconocimiento de esqueletos
+            IntializeSkeletonTracking();
             //Se establece el ángulo de fuente de voz en adaptativo
             sensor.AudioSource.BeamAngleMode = BeamAngleMode.Adaptive;
             //Se inicia el micrófono del Kinect y se envía el audio al motor de reconocimiento de voz
@@ -255,6 +274,56 @@ namespace RealMOL
             {
                 //La confianza no fue suficiente, por lo que se rechaza el comando de voz
                 RejectSpeech();
+            }
+        }
+
+
+        /*
+         * Función: Sensor_SkeletonFrameReady
+         * Descripción: Función que es llamada automáticamente cuando un frame de esqueletos es reconocido
+         * Autor: Christian Vargas
+         * Fecha de creación: 16/08/15
+         * Fecha de modificación: --/--/--
+         * Entradas: --
+         * Salidas: Procesamiento del esqueleto
+         */
+        void Sensor_SkeletonFrameReady(object sender, SkeletonFrameReadyEventArgs e)
+        {
+            //Se obtiene el frame de esqueletos
+            using (SkeletonFrame skeletonFrame = e.OpenSkeletonFrame())
+            {
+                //Se comprueba que el cuadro tenga información valida
+                if (skeletonFrame != null)
+                {
+                    //Se crea un vector que guardara los datos de los esqueletos reconocidos
+                    Skeleton[] skeletonData = new Skeleton[skeletonFrame.SkeletonArrayLength];
+                    //Se copian los datos de los esqueletos
+                    skeletonFrame.CopySkeletonDataTo(skeletonData);
+                    //Se obtiene el primer esqueleto que este siendo rastreado
+                    Skeleton playerSkeleton = (from s in skeletonData where s.TrackingState == SkeletonTrackingState.Tracked select s).FirstOrDefault();
+                    //Se comprueba que el esqueleto tenga información valida
+                    if (playerSkeleton != null)
+                    {
+                        //Se obtienen los datos de las manos y se envían a la lista de posiciones
+                        Joint rightHand = playerSkeleton.Joints[JointType.HandRight];
+                        Joint leftHand = playerSkeleton.Joints[JointType.HandLeft];
+                        Gestures.UpdatePositions(rightHand, leftHand);
+                        //Se comprueba si los últimos frames muestran un gesto de acercamiento, de ser así se manda el comando adecuado
+                        if (Gestures.ZoomIn())
+                        {
+                            sendBytes = Encoding.ASCII.GetBytes("move z, 5");
+                            udpClient.Send(sendBytes, sendBytes.Length);
+                        }
+                        //Se comprueba si los últimos frames muestran un gesto de alejamiento, de ser así se manda el comando adecuado
+                        else if (Gestures.ZoomOut())
+                        {
+                            sendBytes = Encoding.ASCII.GetBytes("move z, -8");
+                            udpClient.Send(sendBytes, sendBytes.Length);
+                        }
+                        //Se limpian las posiciones de frames
+                        Gestures.CleanPositions();
+                    }
+                }
             }
         }
 

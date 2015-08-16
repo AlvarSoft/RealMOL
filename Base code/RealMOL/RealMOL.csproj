@@ -64,6 +64,7 @@
     <Compile Include="Form_Main.Designer.cs">
       <DependentUpon>Form_Main.cs</DependentUpon>
     </Compile>
+    <Compile Include="Gestures.cs" />
     <Compile Include="GrammarGenerator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
