@@ -266,11 +266,15 @@ namespace RealMOL
                     sendBytes = Encoding.ASCII.GetBytes("menu " + commandTree.children.ElementAt(0).code + " " + menuPage.ToString());
                     udpClient.Send(sendBytes, sendBytes.Length);
                 }
-                //Si el comando es de movimiento geométrico, se establecen las variables correspondientes
+                //Si el comando es de movimiento geométrico, se establecen las variables correspondientes y se emite el sonido correspondiente
                 else if (GrammarGenerator.GEOMETRIC_COMMANDS.Contains(e.Result.Text))
                 {
                     geometricWaiting = true;
                     geometricCommand = e.Result.Text;
+                    using (SoundPlayer simpleSound = new SoundPlayer("tracking.wav"))
+                    {
+                        simpleSound.Play();
+                    }
                 }
                 //Si el programa estaba esperando un comando de voz, se procesa el comando
                 else if (waiting)
@@ -359,11 +363,15 @@ namespace RealMOL
                                 sendBytes = Encoding.ASCII.GetBytes(message);
                                 udpClient.Send(sendBytes, sendBytes.Length);
                             }
-                            //Se comprueba si la pose es de terminación, de ser así se establecen  las variables correspondientes
+                            //Se comprueba si la pose es de terminación, de ser así se establecen las variables correspondientes y se emite el sonido correspondiente
                             else if (handPose == Gestures.PoseTypes.Finish)
                             {
                                 geometricWaiting = false;
                                 geometricCommand = "";
+                                using (SoundPlayer simpleSound = new SoundPlayer("understood.wav"))
+                                {
+                                    simpleSound.Play();
+                                }
                             }
                         }
                     }

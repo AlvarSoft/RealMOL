@@ -11,7 +11,7 @@ namespace RealMOL
     {
         public enum PoseTypes { Positive, Negative, Rest, Finish }; //Tipos de pose para la mano
 
-        const float DISTANCETOLERANCE = 0.15f; //Distancia tolerada para considerar que dos coordenadas están cerca
+        const float DISTANCETOLERANCE = 0.20f; //Distancia tolerada para considerar que dos coordenadas están cerca
 
         /*
          * Función: GetHandPose
