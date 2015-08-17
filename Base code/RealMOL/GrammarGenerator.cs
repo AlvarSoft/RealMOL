@@ -14,6 +14,7 @@ namespace RealMOL
         private static char[] CHARACTERS = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' }; //Letras del alfabeto y dígitos numéricos
         public static string[] numbers_sounds = new string[9999];
 
+        public static string[] GEOMETRIC_COMMANDS = { "Enfocar", "Girar", "Rotar", "Voltear" }; //Comandos de control geométrico
         public static string[] MENU_COMMANDS = { "Cancelar", "Siguiente", "Anterior" }; //Comandos para navegar por los menús
         public static string[] DICTATION_COMMANDS = { "Borrar", "Aceptar" }; //Comandos para controlar los dictados
         public static string[] CHARACTERS_SOUNDS = { "vocal a", "letra be", "letra ce", "letra de", "vocal e", "letra efe", "letra ge", "letra ache", "vocal i", "letra jota", "letra ka",
@@ -197,7 +198,7 @@ namespace RealMOL
          * Función: GetGrammar
          * Descripción: Función que llena y devuelve la gramática usando los vectores de comandos y el árbol de comandos
          * Autor: Christian Vargas
-         * Fecha de creación: 30/07/15
+         * Fecha de creación: 16/08/15
          * Fecha de modificación: --/--/--
          * Entradas: Nodo inicial del árbol de comandos
          * Salidas: (Choices, gramática para entrenar a Kinect)
@@ -205,6 +206,10 @@ namespace RealMOL
         public static Choices GetGrammar(CommandNode commandTree)
         {
             grammar = new Choices();
+            foreach (string command in GEOMETRIC_COMMANDS)
+            {
+                grammar.Add(command);
+            }
             foreach (string command in MENU_COMMANDS)
             {
                 grammar.Add(command);
