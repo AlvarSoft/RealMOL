@@ -55,6 +55,9 @@ namespace RealMOL
         private bool waiting = false; //Variable que determina si Kinect está esperando un comando de voz
         private const float CONFIDENCE = 0.6f; //Valor de confianza mínimo para aceptar un comando de voz
 
+        private bool geometricWaiting = false; //Variable que indica si actualmente se está llevando a cabo un comando geométrico
+        private string geometricCommand = ""; //Comando geométrico actual
+
         private const int SLEEPTIME = 150; //Tiempo de espera entre lectura de botones del control de Xbox 360
 
         /*
@@ -262,10 +265,15 @@ namespace RealMOL
                     waiting = true;
                     sendBytes = Encoding.ASCII.GetBytes("menu " + commandTree.children.ElementAt(0).code + " " + menuPage.ToString());
                     udpClient.Send(sendBytes, sendBytes.Length);
-                    return;
+                }
+                //Si el comando es de movimiento geométrico, se establecen las variables correspondientes
+                else if (GrammarGenerator.GEOMETRIC_COMMANDS.Contains(e.Result.Text))
+                {
+                    geometricWaiting = true;
+                    geometricCommand = e.Result.Text;
                 }
                 //Si el programa estaba esperando un comando de voz, se procesa el comando
-                if (waiting)
+                else if (waiting)
                 {
                     ProcessAudioCommand(e.Result.Text);
                 }
@@ -289,39 +297,75 @@ namespace RealMOL
          */
         void Sensor_SkeletonFrameReady(object sender, SkeletonFrameReadyEventArgs e)
         {
-            //Se obtiene el frame de esqueletos
-            using (SkeletonFrame skeletonFrame = e.OpenSkeletonFrame())
+            //Se comprueba que se esté realizando un comando geométrico
+            if (geometricWaiting)
             {
-                //Se comprueba que el cuadro tenga información valida
-                if (skeletonFrame != null)
+                //Se obtiene el frame de esqueletos
+                using (SkeletonFrame skeletonFrame = e.OpenSkeletonFrame())
                 {
-                    //Se crea un vector que guardara los datos de los esqueletos reconocidos
-                    Skeleton[] skeletonData = new Skeleton[skeletonFrame.SkeletonArrayLength];
-                    //Se copian los datos de los esqueletos
-                    skeletonFrame.CopySkeletonDataTo(skeletonData);
-                    //Se obtiene el primer esqueleto que este siendo rastreado
-                    Skeleton playerSkeleton = (from s in skeletonData where s.TrackingState == SkeletonTrackingState.Tracked select s).FirstOrDefault();
-                    //Se comprueba que el esqueleto tenga información valida
-                    if (playerSkeleton != null)
+                    //Se comprueba que el cuadro tenga información valida
+                    if (skeletonFrame != null)
                     {
-                        //Se obtienen los datos de las manos y se envían a la lista de posiciones
-                        Joint rightHand = playerSkeleton.Joints[JointType.HandRight];
-                        Joint leftHand = playerSkeleton.Joints[JointType.HandLeft];
-                        Gestures.UpdatePositions(rightHand, leftHand);
-                        //Se comprueba si los últimos frames muestran un gesto de acercamiento, de ser así se manda el comando adecuado
-                        if (Gestures.ZoomIn())
+                        //Se crea un vector que guardara los datos de los esqueletos reconocidos
+                        Skeleton[] skeletonData = new Skeleton[skeletonFrame.SkeletonArrayLength];
+                        //Se copian los datos de los esqueletos
+                        skeletonFrame.CopySkeletonDataTo(skeletonData);
+                        //Se obtiene el primer esqueleto que este siendo rastreado
+                        Skeleton playerSkeleton = (from s in skeletonData where s.TrackingState == SkeletonTrackingState.Tracked select s).FirstOrDefault();
+                        //Se comprueba que el esqueleto tenga información valida
+                        if (playerSkeleton != null)
                         {
-                            sendBytes = Encoding.ASCII.GetBytes("move z, 5");
-                            udpClient.Send(sendBytes, sendBytes.Length);
+                            //Se obtienen los datos de las posiciones corporales y se obtiene la pose de la mano derecha
+                            Joint rightHand = playerSkeleton.Joints[JointType.HandRight];
+                            Joint shoulderCenter = playerSkeleton.Joints[JointType.ShoulderCenter];
+                            Joint head = playerSkeleton.Joints[JointType.Head];
+                            Gestures.PoseTypes handPose = Gestures.GetHandPose(rightHand, shoulderCenter, head);
+                            string message = "";
+                            int multiplier = 0;
+                            //Se codifica el comando geométrico al código comprendido por PyMOL
+                            switch (geometricCommand)
+                            {
+                                case "Enfocar":
+                                    message = "move z, ";
+                                    multiplier = 2;
+                                    break;
+                                case "Girar":
+                                    message = "turn z, ";
+                                    multiplier = -2;
+                                    break;
+                                case "Rotar":
+                                    message = "turn y, ";
+                                    multiplier = 2;
+                                    break;
+                                case "Voltear":
+                                    message = "turn x, ";
+                                    multiplier = 2;
+                                    break;
+                                default:
+                                    Console.WriteLine("Comando geométrico no codificado, Sensor_SkeletonFrameReady");
+                                    break;
+                            }
+                            //Se comprueba si la pose es positiva, de ser así se envía el comando geométrico con valor positivo
+                            if (handPose == Gestures.PoseTypes.Positive)
+                            {
+                                message += multiplier.ToString();
+                                sendBytes = Encoding.ASCII.GetBytes(message);
+                                udpClient.Send(sendBytes, sendBytes.Length);
+                            }
+                            //Se comprueba si la pose es negativa, de ser así se envía el comando geométrico con valor negativo
+                            else if (handPose == Gestures.PoseTypes.Negative)
+                            {
+                                message += (-1 * multiplier).ToString();
+                                sendBytes = Encoding.ASCII.GetBytes(message);
+                                udpClient.Send(sendBytes, sendBytes.Length);
+                            }
+                            //Se comprueba si la pose es de terminación, de ser así se establecen  las variables correspondientes
+                            else if (handPose == Gestures.PoseTypes.Finish)
+                            {
+                                geometricWaiting = false;
+                                geometricCommand = "";
+                            }
                         }
-                        //Se comprueba si los últimos frames muestran un gesto de alejamiento, de ser así se manda el comando adecuado
-                        else if (Gestures.ZoomOut())
-                        {
-                            sendBytes = Encoding.ASCII.GetBytes("move z, -8");
-                            udpClient.Send(sendBytes, sendBytes.Length);
-                        }
-                        //Se limpian las posiciones de frames
-                        Gestures.CleanPositions();
                     }
                 }
             }
