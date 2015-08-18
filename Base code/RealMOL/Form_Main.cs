@@ -1505,7 +1505,7 @@ namespace RealMOL
             if (sensor != null && sensor.Status == KinectStatus.Connected)
             {
                 DisableWindowInput();
-                Process.Start("Oculus.py", "0");
+                Process.Start("Oculus.py", "1");
                 timer_ControlPyMOL.Enabled = true;
                 speechRecognizer.RecognizeAsync(RecognizeMode.Multiple);
             }
