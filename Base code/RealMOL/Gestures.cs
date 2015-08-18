@@ -9,9 +9,10 @@ namespace RealMOL
 {
     public class Gestures
     {
-        public enum PoseTypes { Positive, Negative, Rest, Finish }; //Tipos de pose para la mano
+        public enum PoseTypes { PositiveSlow, NegativeSlow, PositiveFast, NegativeFast, Rest, Finish }; //Tipos de pose para la mano
 
-        const float DISTANCETOLERANCE = 0.15f; //Distancia tolerada para considerar que dos coordenadas están cerca
+        const float DISTANCETOLERANCE = 0.20f; //Distancia tolerada para considerar que dos coordenadas están cerca
+        const float FARDISTANCE = 0.35f; //Distancia usada para considerar si un punto está lejos
 
         /*
          * Función: GetHandPose
@@ -22,24 +23,37 @@ namespace RealMOL
          * Entradas: --
          * Salidas: (PoseTypes, valor que indica en que pose se encuentra la mano deecha)
          */
-        public static PoseTypes GetHandPose(Joint rightHand, Joint shoulderCenter, Joint head)
+        public static PoseTypes GetHandPose(Joint rightHand, Joint rightShoulder, Joint head)
         {
             if (rightHand.Position.Y > head.Position.Y)
             {
                 return PoseTypes.Finish;
             }
-            if (Math.Abs(rightHand.Position.X - shoulderCenter.Position.X) < DISTANCETOLERANCE &&
-                Math.Abs(rightHand.Position.Y - shoulderCenter.Position.Y) < DISTANCETOLERANCE)
+            else if (Math.Abs(rightHand.Position.X - rightShoulder.Position.X) < DISTANCETOLERANCE)
             {
                 return PoseTypes.Rest;
             }
-            if (rightHand.Position.X > shoulderCenter.Position.X)
+            else if (rightHand.Position.X > rightShoulder.Position.X)
             {
-                return PoseTypes.Positive;
+                if (rightHand.Position.X - rightShoulder.Position.X >= FARDISTANCE)
+                {
+                    return PoseTypes.PositiveFast;
+                }
+                else
+                {
+                    return PoseTypes.PositiveSlow;
+                }
             }
             else
             {
-                return PoseTypes.Negative;
+                if (rightShoulder.Position.X -  rightHand.Position.X >= FARDISTANCE)
+                {
+                    return PoseTypes.NegativeFast;
+                }
+                else
+                {
+                    return PoseTypes.NegativeSlow;
+                }
             }
         }
     }

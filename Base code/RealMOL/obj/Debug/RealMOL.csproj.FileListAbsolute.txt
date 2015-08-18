@@ -51,3 +51,4 @@ C:\Users\Christian010\Documents\GitHub\RealMOL\Base code\RealMOL\obj\Debug\RealM
 C:\Users\Christian010\Documents\GitHub\RealMOL\Base code\RealMOL\obj\Debug\RealMOL.Form_Main.resources
 C:\Users\Christian010\Documents\GitHub\RealMOL\Base code\RealMOL\obj\Debug\RealMOL.Properties.Resources.resources
 C:\Users\Christian010\Documents\GitHub\RealMOL\Base code\RealMOL\obj\Debug\RealMOL.csproj.GenerateResource.Cache
+C:\Users\Christian010\Documents\GitHub\RealMOL\Base code\RealMOL\bin\Debug\tracking.wav

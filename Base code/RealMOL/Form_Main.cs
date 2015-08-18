@@ -266,11 +266,15 @@ namespace RealMOL
                     sendBytes = Encoding.ASCII.GetBytes("menu " + commandTree.children.ElementAt(0).code + " " + menuPage.ToString());
                     udpClient.Send(sendBytes, sendBytes.Length);
                 }
-                //Si el comando es de movimiento geométrico, se establecen las variables correspondientes
+                //Si el comando es de movimiento geométrico, se establecen las variables correspondientes y se emite el sonido correspondiente
                 else if (GrammarGenerator.GEOMETRIC_COMMANDS.Contains(e.Result.Text))
                 {
                     geometricWaiting = true;
                     geometricCommand = e.Result.Text;
+                    using (SoundPlayer simpleSound = new SoundPlayer("tracking.wav"))
+                    {
+                        simpleSound.Play();
+                    }
                 }
                 //Si el programa estaba esperando un comando de voz, se procesa el comando
                 else if (waiting)
@@ -317,9 +321,9 @@ namespace RealMOL
                         {
                             //Se obtienen los datos de las posiciones corporales y se obtiene la pose de la mano derecha
                             Joint rightHand = playerSkeleton.Joints[JointType.HandRight];
-                            Joint shoulderCenter = playerSkeleton.Joints[JointType.ShoulderCenter];
+                            Joint rightShoulder = playerSkeleton.Joints[JointType.ShoulderRight];
                             Joint head = playerSkeleton.Joints[JointType.Head];
-                            Gestures.PoseTypes handPose = Gestures.GetHandPose(rightHand, shoulderCenter, head);
+                            Gestures.PoseTypes handPose = Gestures.GetHandPose(rightHand, rightShoulder, head);
                             string message = "";
                             int multiplier = 0;
                             //Se codifica el comando geométrico al código comprendido por PyMOL
@@ -327,43 +331,61 @@ namespace RealMOL
                             {
                                 case "Enfocar":
                                     message = "move z, ";
-                                    multiplier = 2;
+                                    multiplier = 1;
                                     break;
                                 case "Girar":
                                     message = "turn z, ";
-                                    multiplier = -2;
+                                    multiplier = -1;
                                     break;
                                 case "Rotar":
                                     message = "turn y, ";
-                                    multiplier = 2;
+                                    multiplier = 1;
                                     break;
                                 case "Voltear":
                                     message = "turn x, ";
-                                    multiplier = 2;
+                                    multiplier = 1;
                                     break;
                                 default:
                                     Console.WriteLine("Comando geométrico no codificado, Sensor_SkeletonFrameReady");
                                     break;
                             }
-                            //Se comprueba si la pose es positiva, de ser así se envía el comando geométrico con valor positivo
-                            if (handPose == Gestures.PoseTypes.Positive)
+                            //Se comprueba si la pose es positiva rápida, de ser así se envía el comando geométrico con valor positivo multiplicado por 2
+                            if (handPose == Gestures.PoseTypes.PositiveFast)
+                            {
+                                message += (2 * multiplier).ToString();
+                                sendBytes = Encoding.ASCII.GetBytes(message);
+                                udpClient.Send(sendBytes, sendBytes.Length);
+                            }
+                            //Se comprueba si la pose es positiva lenta, de ser así se envía el comando geométrico con valor positivo
+                            else if (handPose == Gestures.PoseTypes.PositiveSlow)
                             {
                                 message += multiplier.ToString();
                                 sendBytes = Encoding.ASCII.GetBytes(message);
                                 udpClient.Send(sendBytes, sendBytes.Length);
                             }
-                            //Se comprueba si la pose es negativa, de ser así se envía el comando geométrico con valor negativo
-                            else if (handPose == Gestures.PoseTypes.Negative)
+                            //Se comprueba si la pose es negativa rápida, de ser así se envía el comando geométrico con valor negativo multiplicado por 2
+                            else if (handPose == Gestures.PoseTypes.NegativeFast)
+                            {
+                                message += (-2 * multiplier).ToString();
+                                sendBytes = Encoding.ASCII.GetBytes(message);
+                                udpClient.Send(sendBytes, sendBytes.Length);
+                            }
+                            //Se comprueba si la pose es negativa lenta, de ser así se envía el comando geométrico con valor negativo
+                            else if (handPose == Gestures.PoseTypes.NegativeSlow)
                             {
                                 message += (-1 * multiplier).ToString();
                                 sendBytes = Encoding.ASCII.GetBytes(message);
                                 udpClient.Send(sendBytes, sendBytes.Length);
                             }
-                            //Se comprueba si la pose es de terminación, de ser así se establecen  las variables correspondientes
+                            //Se comprueba si la pose es de terminación, de ser así se establecen las variables correspondientes y se emite el sonido correspondiente
                             else if (handPose == Gestures.PoseTypes.Finish)
                             {
                                 geometricWaiting = false;
                                 geometricCommand = "";
+                                using (SoundPlayer simpleSound = new SoundPlayer("understood.wav"))
+                                {
+                                    simpleSound.Play();
+                                }
                             }
                         }
                     }
@@ -1483,7 +1505,7 @@ namespace RealMOL
             if (sensor != null && sensor.Status == KinectStatus.Connected)
             {
                 DisableWindowInput();
-                Process.Start("Oculus.py", "1");
+                Process.Start("Oculus.py", "0");
                 timer_ControlPyMOL.Enabled = true;
                 speechRecognizer.RecognizeAsync(RecognizeMode.Multiple);
             }

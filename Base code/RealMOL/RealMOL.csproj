@@ -111,6 +111,9 @@
     </Content>
     <None Include="Resources\start.png" />
     <None Include="Resources\reload.png" />
+    <Content Include="tracking.wav">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="understood.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
