@@ -112,6 +112,39 @@ class CommandNode:
         self.add_tree_childs(self, root)
 
 class RealMOL:
+    
+    def __init__(self,debug=False):
+        #Se crea el árbol de comandos y se carga con los datos del XML
+        self.commandTree = CommandNode(Types.Root, "", "")
+        self.commandTree.create_tree(XMLFILE)
+        self.debug = debug;
+        #Valor de sensibilidad para el movimiento del OVR
+        self.ovr_sensitivity = 80
+        #Variable que controla la ejecución y finalización del programa
+        self.running = True
+
+        #Si no estamos depurando, inicializamos el OVR
+        if not self.debug:
+            #Se inicializa el OVR
+            self.hmd = self.__initialize_ovr()
+            #Valores de posición anteriores del OVR, inicializados en 0
+            self.prevp = [0, 0]
+        #Socket que se utilizara para escuchar los comandos del Kinect
+        self.sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+        self.sock.bind((UDP_IP, UDP_PORT))
+        #Establecemos el socket como no bloqueante para poder recibir comandos sin detener el rastreo del Oculus
+        self.sock.setblocking(0)
+        #Buffer en donde se guardaran los comandos del Kinect
+        self.data = ""
+
+        #Se inicializa PyMOL
+        self.__initialize_pymol()
+
+        #Lista de moléculas cargadas con su titulo
+        self.mollist = {}
+
+        #Variable que guarda la posición de la cámara antes de desplegar un menú
+        self.backupView = ()    
 
     """
     Función: rotate_screen
@@ -517,39 +550,6 @@ class RealMOL:
         else:
             pymol.cmd.do(command)
         self.running = True
-        return
-    def __init__(self,debug=False):
-        #Se crea el árbol de comandos y se carga con los datos del XML
-        self.commandTree = CommandNode(Types.Root, "", "")
-        self.commandTree.create_tree(XMLFILE)
-        self.debug = debug;
-        #Valor de sensibilidad para el movimiento del OVR
-        self.ovr_sensitivity = 80
-        #Variable que controla la ejecución y finalización del programa
-        self.running = True
-
-        #Si no estamos depurando, inicializamos el OVR
-        if not self.debug:
-            #Se inicializa el OVR
-            hmd = self.__initialize_ovr()
-            #Valores de posición anteriores del OVR, inicializados en 0
-            self.prevp = [0, 0]
-        #Socket que se utilizara para escuchar los comandos del Kinect
-        self.sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-        self.sock.bind((UDP_IP, UDP_PORT))
-        #Establecemos el socket como no bloqueante para poder recibir comandos sin detener el rastreo del Oculus
-        self.sock.setblocking(0)
-        #Buffer en donde se guardaran los comandos del Kinect
-        self.data = ""
-
-        #Se inicializa PyMOL
-        self.__initialize_pymol()
-
-        #Lista de moléculas cargadas con su titulo
-        self.mollist = {}
-
-        #Variable que guarda la posición de la cámara antes de desplegar un menú
-        self.backupView = ()
 
     """
     Función: main
@@ -565,13 +565,13 @@ class RealMOL:
             #Si no estamos depurando, movemos los objetos de acuerdo al movimiento del Oculus
             if not self.debug:
                 #Se obtiene la posición actual del OVR
-                ss = ovrsdk.ovrHmd_GetSensorState(hmd, ovrsdk.ovr_GetTimeInSeconds())
+                ss = ovrsdk.ovrHmd_GetSensorState(self.hmd, ovrsdk.ovr_GetTimeInSeconds())
                 pose = ss.Predicted.Pose
                 #Valores de posición actuales del OVR
                 currp = [pose.Orientation.x,pose.Orientation.y]
                 #Movemos la cámara del visualizador de moléculas en sentido al movimiento del OVR
                 pymol.cmd.move('x',(currp[1]-self.prevp[1])*self.ovr_sensitivity)
-                pymol.cmd.move('y',-(currp[0]-prevp[0])*self.ovr_sensitivity)
+                pymol.cmd.move('y',-(currp[0]-self.prevp[0])*self.ovr_sensitivity)
                 #Actualizamos los valores de posición anteriores del OVR
                 self.prevp = currp
             #Comprobamos si hay comandos por recibir, en caso de no existir alguno, se ignora el error que generaría el sistema operativo.
