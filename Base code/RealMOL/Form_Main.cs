@@ -319,66 +319,87 @@ namespace RealMOL
                         //Se comprueba que el esqueleto tenga información valida
                         if (playerSkeleton != null)
                         {
-                            //Se obtienen los datos de las posiciones corporales y se obtiene la pose de la mano derecha
+                            //Se obtienen los datos de las posiciones corporales
                             Joint rightHand = playerSkeleton.Joints[JointType.HandRight];
+                            Joint leftHand = playerSkeleton.Joints[JointType.HandLeft];
                             Joint rightShoulder = playerSkeleton.Joints[JointType.ShoulderRight];
                             Joint head = playerSkeleton.Joints[JointType.Head];
-                            Gestures.PoseTypes handPose = Gestures.GetHandPose(rightHand, rightShoulder, head);
+                            //Se inicializa una variable que se utilizara para enviar el comando a PyMOL
                             string message = "";
-                            int multiplier = 0;
+                            //Se inicializa una variable que indicara si el programa continuo ejecutándose
+                            bool moving = true;
                             //Se codifica el comando geométrico al código comprendido por PyMOL
                             switch (geometricCommand)
                             {
+                                //En caso de que el comando sea enfocar, obtenemos el valor de movimiento en un solo eje, enviamos el mensaje correspondiente al programa en PyMOL y si el usuario está terminando el movimiento, establecemos la variable correspondiente
                                 case "Enfocar":
-                                    message = "move z, ";
-                                    multiplier = 1;
+                                    Tuple<bool, int> zoomValue = Gestures.Get1AxleValue(rightHand, leftHand, rightShoulder, head);
+                                    if (zoomValue.Item1)
+                                    {
+                                        message = "move z, " + zoomValue.Item2;
+                                        sendBytes = Encoding.ASCII.GetBytes(message);
+                                        udpClient.Send(sendBytes, sendBytes.Length);
+                                    }
+                                    else
+                                    {
+                                        moving = false;
+                                    }
                                     break;
+                                //En caso de que el comando sea girar, obtenemos el valor de movimiento en un solo eje, enviamos el mensaje correspondiente al programa en PyMOL y si el usuario está terminando el movimiento, establecemos la variable correspondiente
                                 case "Girar":
-                                    message = "turn z, ";
-                                    multiplier = -1;
+                                    Tuple<bool, int> turnValue = Gestures.Get1AxleValue(rightHand, leftHand, rightShoulder, head);
+                                    if (turnValue.Item1)
+                                    {
+                                        message = "turn z, " + -turnValue.Item2;
+                                        sendBytes = Encoding.ASCII.GetBytes(message);
+                                        udpClient.Send(sendBytes, sendBytes.Length);
+                                    }
+                                    else
+                                    {
+                                        moving = false;
+                                    }
                                     break;
+                                //En caso de que el comando sea mover, obtenemos el valor de movimiento en los dos ejes, enviamos el mensaje correspondiente al programa en PyMOL y si el usuario está terminando el movimiento, establecemos la variable correspondiente.
+                                case "Mover":
+                                    Tuple<bool, int, int> moveValue = Gestures.Get2AxisValue(rightHand, leftHand, rightShoulder, head);
+                                    if (moveValue.Item1)
+                                    {
+                                        message = "move x, " + -moveValue.Item2;
+                                        sendBytes = Encoding.ASCII.GetBytes(message);
+                                        udpClient.Send(sendBytes, sendBytes.Length);
+                                        message = "move y, " + moveValue.Item3;
+                                        sendBytes = Encoding.ASCII.GetBytes(message);
+                                        udpClient.Send(sendBytes, sendBytes.Length);
+                                    }
+                                    else
+                                    {
+                                        moving = false;
+                                    }
+                                    break;
+                                //En caso de que el comando sea rotar, obtenemos el valor de movimiento en los dos ejes, enviamos el mensaje correspondiente al programa en PyMOL y si el usuario está terminando el movimiento, establecemos la variable correspondiente.
                                 case "Rotar":
-                                    message = "turn y, ";
-                                    multiplier = 1;
+                                    Tuple<bool, int, int> rotationValue = Gestures.Get2AxisValue(rightHand, leftHand, rightShoulder, head);
+                                    if (rotationValue.Item1)
+                                    {
+                                        message = "turn y, " + rotationValue.Item2;
+                                        sendBytes = Encoding.ASCII.GetBytes(message);
+                                        udpClient.Send(sendBytes, sendBytes.Length);
+                                        message = "turn x, " + rotationValue.Item3;
+                                        sendBytes = Encoding.ASCII.GetBytes(message);
+                                        udpClient.Send(sendBytes, sendBytes.Length);
+                                    }
+                                    else
+                                    {
+                                        moving = false;
+                                    }
                                     break;
-                                case "Voltear":
-                                    message = "turn x, ";
-                                    multiplier = 1;
-                                    break;
+                                //En cualquier otro caso, existió un error
                                 default:
                                     Console.WriteLine("Comando geométrico no codificado, Sensor_SkeletonFrameReady");
                                     break;
                             }
-                            //Se comprueba si la pose es positiva rápida, de ser así se envía el comando geométrico con valor positivo multiplicado por 2
-                            if (handPose == Gestures.PoseTypes.PositiveFast)
-                            {
-                                message += (2 * multiplier).ToString();
-                                sendBytes = Encoding.ASCII.GetBytes(message);
-                                udpClient.Send(sendBytes, sendBytes.Length);
-                            }
-                            //Se comprueba si la pose es positiva lenta, de ser así se envía el comando geométrico con valor positivo
-                            else if (handPose == Gestures.PoseTypes.PositiveSlow)
-                            {
-                                message += multiplier.ToString();
-                                sendBytes = Encoding.ASCII.GetBytes(message);
-                                udpClient.Send(sendBytes, sendBytes.Length);
-                            }
-                            //Se comprueba si la pose es negativa rápida, de ser así se envía el comando geométrico con valor negativo multiplicado por 2
-                            else if (handPose == Gestures.PoseTypes.NegativeFast)
-                            {
-                                message += (-2 * multiplier).ToString();
-                                sendBytes = Encoding.ASCII.GetBytes(message);
-                                udpClient.Send(sendBytes, sendBytes.Length);
-                            }
-                            //Se comprueba si la pose es negativa lenta, de ser así se envía el comando geométrico con valor negativo
-                            else if (handPose == Gestures.PoseTypes.NegativeSlow)
-                            {
-                                message += (-1 * multiplier).ToString();
-                                sendBytes = Encoding.ASCII.GetBytes(message);
-                                udpClient.Send(sendBytes, sendBytes.Length);
-                            }
-                            //Se comprueba si la pose es de terminación, de ser así se establecen las variables correspondientes y se emite el sonido correspondiente
-                            else if (handPose == Gestures.PoseTypes.Finish)
+                            //Si el movimiento ya termino, establecemos la variable correspondiente y emitimos un sonido para informar al usuario
+                            if (!moving)
                             {
                                 geometricWaiting = false;
                                 geometricCommand = "";

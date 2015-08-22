@@ -14,7 +14,7 @@ namespace RealMOL
         private static char[] CHARACTERS = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' }; //Letras del alfabeto y dígitos numéricos
         public static string[] numbers_sounds = new string[9999];
 
-        public static string[] GEOMETRIC_COMMANDS = { "Enfocar", "Girar", "Rotar", "Voltear" }; //Comandos de control geométrico
+        public static string[] GEOMETRIC_COMMANDS = { "Enfocar", "Girar", "Mover", "Rotar" }; //Comandos de control geométrico
         public static string[] MENU_COMMANDS = { "Cancelar", "Siguiente", "Anterior" }; //Comandos para navegar por los menús
         public static string[] DICTATION_COMMANDS = { "Borrar", "Aceptar" }; //Comandos para controlar los dictados
         public static string[] CHARACTERS_SOUNDS = { "vocal a", "letra be", "letra ce", "letra de", "vocal e", "letra efe", "letra ge", "letra ache", "vocal i", "letra jota", "letra ka",
