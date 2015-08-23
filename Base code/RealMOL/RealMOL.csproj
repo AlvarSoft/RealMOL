@@ -109,6 +109,7 @@
     <Content Include="repeat.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="unlock.wav" />
     <None Include="Resources\start.png" />
     <None Include="Resources\reload.png" />
     <Content Include="tracking.wav">

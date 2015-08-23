@@ -652,6 +652,20 @@
       </page>
     </menu>
     <command>
+      <text>Centrar</text>
+      <code>center</code>
+    </command>
+    <command>
+      <text>Restablecer</text>
+      <code>reset</code>
+    </command>
+    <command>
+      <text>Renderizar</text>
+      <code>PREPARE_RAY</code>
+    </command>
+  </page>
+  <page>
+    <command>
       <text>Salir</text>
       <code>QUIT</code>
     </command>

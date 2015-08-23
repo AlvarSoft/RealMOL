@@ -45,7 +45,9 @@ namespace RealMOL
         private bool hearingSel = false; //Variable que permite saber si actualmente se está escuchando el nombre de una selección
         private bool hearingResI = false; //Variable que permite saber si actualmente se están escuchando los enteros de una selección
         private bool hearingFontSize = false; //Variable que permite saber si actualmente se está escuchando el tamaño de una fuente
-        
+        private bool displayingRayWarning = false; //Variable que permite saber si actualmente se está mostrando una advertencia de ray
+        private bool blocked = false; //Variable que indica si la entrada de comandos se encuentra actualmente bloqueada
+
         private Controller xboxControl; //Control de Xbox 360
         private uint xboxControlSensitivity = 3; //Valor de sensibilidad para el control de Xbox 360
         private bool xboxControlDetected = false; //Variable que determinara si el control de Xbox 360 fue detectado antes de iniciar PyMOL
@@ -255,31 +257,46 @@ namespace RealMOL
             //Se comprueba que la confianza sea mayor al mínimo establecido
             if (e.Result.Confidence > CONFIDENCE)
             {
-                //Si el comando es el inicial del árbol, entonces informamos al usuario que el programa está listo para recibir comandos de voz, establecemos la variable adecuada, enviamos un comando al programa en Python para solicitar el menú inicial en la página 1 y terminamos la función
-                if (e.Result.Text == commandTree.children.ElementAt(0).text && !waiting)
+                //Se comprueba que la entrada de comandos no este bloqueada
+                if (!blocked)
                 {
-                    using (SoundPlayer simpleSound = new SoundPlayer("ready.wav"))
+                    //Si el comando es el inicial del árbol, entonces informamos al usuario que el programa está listo para recibir comandos de voz, establecemos la variable adecuada, enviamos un comando al programa en Python para solicitar el menú inicial en la página 1 y terminamos la función
+                    if (e.Result.Text == commandTree.children.ElementAt(0).text && !waiting)
                     {
-                        simpleSound.Play();
+                        using (SoundPlayer simpleSound = new SoundPlayer("ready.wav"))
+                        {
+                            simpleSound.Play();
+                        }
+                        waiting = true;
+                        sendBytes = Encoding.ASCII.GetBytes("menu " + commandTree.children.ElementAt(0).code + " " + menuPage.ToString());
+                        udpClient.Send(sendBytes, sendBytes.Length);
                     }
-                    waiting = true;
-                    sendBytes = Encoding.ASCII.GetBytes("menu " + commandTree.children.ElementAt(0).code + " " + menuPage.ToString());
+                    //Si el comando es de movimiento geométrico, se establecen las variables correspondientes y se emite el sonido correspondiente
+                    else if (GrammarGenerator.GEOMETRIC_COMMANDS.Contains(e.Result.Text))
+                    {
+                        geometricWaiting = true;
+                        geometricCommand = e.Result.Text;
+                        using (SoundPlayer simpleSound = new SoundPlayer("tracking.wav"))
+                        {
+                            simpleSound.Play();
+                        }
+                    }
+                    //Si el programa estaba esperando un comando de voz, se procesa el comando
+                    else if (waiting)
+                    {
+                        ProcessAudioCommand(e.Result.Text);
+                    }
+                }
+                //Se comprueba si el comando es el de desbloqueo, de ser así se desbloquea la entrada de comandos y se informa al usuario
+                else if (e.Result.Text == GrammarGenerator.UNLOCK_COMMAND)
+                {
+                    blocked = false;
+                    sendBytes = Encoding.ASCII.GetBytes("CONTINUE");
                     udpClient.Send(sendBytes, sendBytes.Length);
-                }
-                //Si el comando es de movimiento geométrico, se establecen las variables correspondientes y se emite el sonido correspondiente
-                else if (GrammarGenerator.GEOMETRIC_COMMANDS.Contains(e.Result.Text))
-                {
-                    geometricWaiting = true;
-                    geometricCommand = e.Result.Text;
-                    using (SoundPlayer simpleSound = new SoundPlayer("tracking.wav"))
+                    using (SoundPlayer simpleSound = new SoundPlayer("unlock.wav"))
                     {
                         simpleSound.Play();
                     }
-                }
-                //Si el programa estaba esperando un comando de voz, se procesa el comando
-                else if (waiting)
-                {
-                    ProcessAudioCommand(e.Result.Text);
                 }
             }
             else
@@ -301,8 +318,8 @@ namespace RealMOL
          */
         void Sensor_SkeletonFrameReady(object sender, SkeletonFrameReadyEventArgs e)
         {
-            //Se comprueba que se esté realizando un comando geométrico
-            if (geometricWaiting)
+            //Se comprueba que se esté realizando un comando geométrico y la entrada de comandos no esta bloqueada
+            if (geometricWaiting && !blocked)
             {
                 //Se obtiene el frame de esqueletos
                 using (SkeletonFrame skeletonFrame = e.OpenSkeletonFrame())
@@ -332,7 +349,7 @@ namespace RealMOL
                             switch (geometricCommand)
                             {
                                 //En caso de que el comando sea enfocar, obtenemos el valor de movimiento en un solo eje, enviamos el mensaje correspondiente al programa en PyMOL y si el usuario está terminando el movimiento, establecemos la variable correspondiente
-                                case "Enfocar":
+                                case "enfocar":
                                     Tuple<bool, int> zoomValue = Gestures.Get1AxleValue(rightHand, leftHand, rightShoulder, head);
                                     if (zoomValue.Item1)
                                     {
@@ -346,7 +363,7 @@ namespace RealMOL
                                     }
                                     break;
                                 //En caso de que el comando sea girar, obtenemos el valor de movimiento en un solo eje, enviamos el mensaje correspondiente al programa en PyMOL y si el usuario está terminando el movimiento, establecemos la variable correspondiente
-                                case "Girar":
+                                case "girar":
                                     Tuple<bool, int> turnValue = Gestures.Get1AxleValue(rightHand, leftHand, rightShoulder, head);
                                     if (turnValue.Item1)
                                     {
@@ -360,7 +377,7 @@ namespace RealMOL
                                     }
                                     break;
                                 //En caso de que el comando sea mover, obtenemos el valor de movimiento en los dos ejes, enviamos el mensaje correspondiente al programa en PyMOL y si el usuario está terminando el movimiento, establecemos la variable correspondiente.
-                                case "Mover":
+                                case "mover":
                                     Tuple<bool, int, int> moveValue = Gestures.Get2AxisValue(rightHand, leftHand, rightShoulder, head);
                                     if (moveValue.Item1)
                                     {
@@ -377,7 +394,7 @@ namespace RealMOL
                                     }
                                     break;
                                 //En caso de que el comando sea rotar, obtenemos el valor de movimiento en los dos ejes, enviamos el mensaje correspondiente al programa en PyMOL y si el usuario está terminando el movimiento, establecemos la variable correspondiente.
-                                case "Rotar":
+                                case "rotar":
                                     Tuple<bool, int, int> rotationValue = Gestures.Get2AxisValue(rightHand, leftHand, rightShoulder, head);
                                     if (rotationValue.Item1)
                                     {
@@ -649,6 +666,20 @@ namespace RealMOL
         }
 
         /*
+         * Función: InSpecialMenu
+         * Descripción: Función que averigua si se está desplegando un menú especial
+         * Autor: Christian Vargas
+         * Fecha de creación: 23/08/15
+         * Fecha de modificación: --/--/--
+         * Entradas: --
+         * Salidas: (bool, variable que indica si se está desplegando un menú especial)
+         */
+        private bool InSpecialMenu()
+        {
+            return (showingTitles || hearingMol || hearingSel || hearingResI || hearingFontSize || displayingRayWarning);
+        }
+
+        /*
          * Función: HandleCommandByNumber
          * Descripción: Función que maneja los comandos del menú por numero
          * Autor: Christian Vargas
@@ -746,7 +777,7 @@ namespace RealMOL
                 return;
             }
             //Si el comando es siguiente se aumenta el número de página de forma circular, evitando un desbordamiento 
-            if (command == "Siguiente")
+            if (command == "siguiente")
             {
                 if (menuPage == pageCount)
                 {
@@ -758,7 +789,7 @@ namespace RealMOL
                 }
             }
             //Si el comando es anterior se disminuye el número de página de forma circular, evitando un desbordamiento 
-            else if (command == "Anterior")
+            else if (command == "anterior")
             {
                 if (menuPage == 1)
                 {
@@ -792,7 +823,7 @@ namespace RealMOL
         private void HandleMenuCommands(string command)
         {
             //Se comprueba si el menú es cancelar, de ser así se elimina el menú
-            if (command == "Cancelar")
+            if (command == "cancelar")
             {
                 QuitMenu(true);
             }
@@ -800,7 +831,7 @@ namespace RealMOL
             else
             {
                 //Si el menú es uno de los menús especiales sin posibilidad de páginas se rechaza el comando
-                if (showingTitles || hearingMol || hearingSel || hearingResI || hearingFontSize)
+                if (InSpecialMenu())
                 {
                     RejectSpeech();
                 }
@@ -843,7 +874,7 @@ namespace RealMOL
                 return;
             }
             //Se comprueba si el comando es el de borrar
-            if (command == "Borrar")
+            if (command == "borrar")
             {
                 //Se comprueba si actualmente se está escuchando un código de molécula
                 if (hearingMol)
@@ -946,7 +977,7 @@ namespace RealMOL
                 }
             }
             //Se comprueba si el comando es el de aceptar
-            else if (command == "Aceptar")
+            else if (command == "aceptar")
             {
                 //Si se están mostrando los títulos entonces se elimina el menú
                 if (showingTitles)
@@ -1032,6 +1063,17 @@ namespace RealMOL
                     {
                         RejectSpeech();
                     }
+                }
+                //Se comprueba si actualmente se está desplegando una advertencia de bloqueo de comandos
+                else if (displayingRayWarning)
+                {
+                    //Se forma el comando final, se elimina el menú y se envía el comando
+                    message = message.Replace("PREPARERAY", "ray");
+                    QuitMenu(true);
+                    sendBytes = Encoding.ASCII.GetBytes(message);
+                    udpClient.Send(sendBytes, sendBytes.Length);
+                    //Se bloquea la entrada de comandos, ya que ray pierde su efecto si se recibe un comando
+                    blocked = true;
                 }
                 //Caso contrario se rechaza el comando 
                 else
@@ -1268,6 +1310,10 @@ namespace RealMOL
             {
                 hearingFontSize = true;
             }
+            else if (message.Contains("PREPARE_RAY"))
+            {
+                displayingRayWarning = true;
+            }
             //Se comprueba si el comando requiere que se finalice la ejecución del el programa, de ser así se para el reconocimiento de voz, la actualización del control y se permite la entrada de datos en la ventana del programa
             else if (message.Contains("QUIT"))
             {
@@ -1303,7 +1349,7 @@ namespace RealMOL
             else
             {
                 //Si estamos en un menú sin páginas entonces solo se antepone la palabra menú en el comando, caso contrario también se envía el número de página (establecido en 1)
-                if (showingTitles || hearingMol || hearingSel || hearingResI || hearingFontSize)
+                if (InSpecialMenu())
                 {
                     message = "menu " + message;
                 }
@@ -1431,35 +1477,35 @@ namespace RealMOL
                 //Si el usuario presiona el botón A, lo manejamos como si dijera aceptar
                 if (controlState.Gamepad.Buttons.HasFlag(GamepadButtonFlags.A))
                 {
-                    HandleDictationCommands("Aceptar");
+                    HandleDictationCommands("aceptar");
                     //Se hace una pausa para no detectar más de una vez el botón
                     Thread.Sleep(SLEEPTIME);
                 }
                 //Si el usuario presiona el botón B, lo manejamos como si dijera borrar
                 else if (controlState.Gamepad.Buttons.HasFlag(GamepadButtonFlags.B))
                 {
-                    HandleDictationCommands("Borrar");
+                    HandleDictationCommands("borrar");
                     //Se hace una pausa para no detectar más de una vez el botón
                     Thread.Sleep(SLEEPTIME);
                 }
                 //Si el usuario presiona el botón Y, lo manejamos como si dijera cancelar
                 else if (controlState.Gamepad.Buttons.HasFlag(GamepadButtonFlags.Y))
                 {
-                    HandleMenuCommands("Cancelar");
+                    HandleMenuCommands("cancelar");
                     //Se hace una pausa para no detectar más de una vez el botón
                     Thread.Sleep(SLEEPTIME);
                 }
                 //Si el usuario presiona el botón derecha, lo manejamos como si dijera siguiente
                 else if (controlState.Gamepad.Buttons.HasFlag(GamepadButtonFlags.DPadRight))
                 {
-                    HandleMenuCommands("Siguiente");
+                    HandleMenuCommands("siguiente");
                     //Se hace una pausa para no detectar más de una vez el botón
                     Thread.Sleep(SLEEPTIME);
                 }
                 //Si el usuario presiona el botón izquierda, lo manejamos como si dijera anterior
                 else if (controlState.Gamepad.Buttons.HasFlag(GamepadButtonFlags.DPadLeft))
                 {
-                    HandleMenuCommands("Anterior");
+                    HandleMenuCommands("anterior");
                     //Se hace una pausa para no detectar más de una vez el botón
                     Thread.Sleep(SLEEPTIME);
                 }
@@ -1617,8 +1663,8 @@ namespace RealMOL
          */
         private void timer_ControlPyMOL_Tick(object sender, EventArgs e)
         {
-            //Si el control de Xbox fue detectado, se obtiene una actualización de él
-            if (xboxControlDetected)
+            //Si el control de Xbox fue detectado y la entrada de comandos no esta bloqueada, se obtiene una actualización de él
+            if (xboxControlDetected && !blocked)
             {
                 /*
                  * Si el control informa que el usuario decidió terminar la ejecución de PyMOL, se deshabilita el temporizador, 

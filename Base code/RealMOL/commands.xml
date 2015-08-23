@@ -660,6 +660,12 @@
       <code>reset</code>
     </command>
     <command>
+      <text>Renderizar</text>
+      <code>PREPARE_RAY</code>
+    </command>
+  </page>
+  <page>
+    <command>
       <text>Salir</text>
       <code>QUIT</code>
     </command>

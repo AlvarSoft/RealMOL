@@ -122,6 +122,8 @@ class RealMOL:
         self.ovr_sensitivity = 80
         #Variable que controla la ejecución y finalización del programa
         self.running = True
+        #Variable que indica si se está bloqueando el uso del movimiento
+        self.moveBlocked = False
 
         #Si no estamos depurando, inicializamos el OVR
         if not self.debug:
@@ -312,7 +314,7 @@ class RealMOL:
     Entradas: code (str, el código que hasta ahora se ha dictado)
     Salidas: Mensaje en pantalla 
     """
-    def __menu_mcode(self,code):
+    def __menu_mcode(self, code):
         #Se carga el menú con su texto inicial
         menuText = "Dicte el codigo de la molecula\n \n"
         #Se comprueba que el código no este vacío, entonces se imprime el código
@@ -338,7 +340,7 @@ class RealMOL:
     Entradas: res (str, los números que hasta ahora se han dictado)
     Salidas: Mensaje en pantalla 
     """
-    def __menu_hresi(self,res):
+    def __menu_hresi(self, res):
         #Se carga el menú con su texto inicial
         menuText = "Dicte los numeros de los residuos\n \n"
         #Se comprueba que se haya dictado al menos un número 
@@ -366,7 +368,7 @@ class RealMOL:
     Entradas: sel (str, el nombre de la selección hasta ahora)
     Salidas: Mensaje en pantalla 
     """
-    def __menu_hsel(self,sel):
+    def __menu_hsel(self, sel):
         #Se carga el menú con su texto inicial
         menuText = "Dicte el nombre de la seleccion\n \n"
         #Se comprueba que se haya dictado al menos una letra
@@ -394,7 +396,7 @@ class RealMOL:
     Entradas: size (str, el tamaño de la fuente hasta ahora)
     Salidas: Mensaje en pantalla 
     """
-    def __menu_hfsize(self,size):
+    def __menu_hfsize(self, size):
         #Se carga el menú con su texto inicial
         menuText = "Dicte el tamano para la fuente\n \n"
         #Se comprueba que se haya dictado al menos una letra
@@ -410,6 +412,21 @@ class RealMOL:
         #Caso contrario se imprimen solo las opciones básicas    
         else:
             menuText += "\n \n \nBorrar  Cancelar"
+        #Se imprime el menú    
+        self.__print_text(menuText)
+        
+    """
+    Función: menu_ray
+    Descripción: Descripción: Función que imprime la advertencia de usar el comando ray
+    Autor: Christian Vargas
+    Fecha de creación: 23/08/15
+    Fecha de modificación: --/--/--
+    Entradas: --
+    Salidas: Mensaje en pantalla 
+    """
+    def __menu_ray(self):
+        #Se carga el menú con su texto
+        menuText = "Advertencia: La renderizacion se pierde al usar cualquier comando, por lo que los comandos serán bloqueados hasta que usted diga –Continuar-: \n \nCancelar Aceptar"
         #Se imprime el menú    
         self.__print_text(menuText)
 
@@ -456,6 +473,10 @@ class RealMOL:
         elif "HEAR_FONT_SIZE" in menu:
             self.__menu_hfsize(menu.rsplit(' ', 1)[1])
             return
+        #Si estamos mostrando la advertencia del ray, entonces manejamos el menú con la función correspondiente y la función actual termina
+        elif "PREPARE_RAY" in menu:
+            self.__menu_ray()
+            return
         #Se crea la variable que guardara el texto del menú
         menuText = ""
         #Se obtiene el primer menú del árbol de comandos    
@@ -496,6 +517,9 @@ class RealMOL:
         if command == "QUIT":
             self.running = False
             return
+        #Si se recibió un comando de desbloqueo, entonces se habilita el uso del movimiento
+        elif command == "CONTINUE":
+            self.moveBlocked = False
         elif command.startswith("menu"):
             #Se comprueba si el comando es de menú, de ser así se procesa con la función correspondiente
             self.__handle_menu()
@@ -546,6 +570,10 @@ class RealMOL:
                 self.mollist[self.data[6:]] = title
             else:
                 self.sock.sendto("500".encode(), (UDP_IP, 5006));
+        #Si el usuario solicito un ray, entonces bloqueamos el uso del movimiento
+        elif command == "ray":
+            self.moveBlocked = True
+            pymol.cmd.ray()
         #El comando viene limpio, se ejecuta en PyMOL
         else:
             pymol.cmd.do(command)
@@ -562,8 +590,8 @@ class RealMOL:
     """
     def main(self): 
         while self.running:
-            #Si no estamos depurando, movemos los objetos de acuerdo al movimiento del Oculus
-            if not self.debug:
+            #Si no estamos depurando y el movimiento no esta bloqueado, movemos los objetos de acuerdo al movimiento del Oculus
+            if not self.debug and not self.moveBlocked:
                 #Se obtiene la posición actual del OVR
                 ss = ovrsdk.ovrHmd_GetSensorState(self.hmd, ovrsdk.ovr_GetTimeInSeconds())
                 pose = ss.Predicted.Pose

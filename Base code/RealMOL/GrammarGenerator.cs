@@ -11,12 +11,15 @@ namespace RealMOL
     {
         //Gramática que será utilizada para entrenar al Kinect 
         private static Choices grammar;
+
+        public static string UNLOCK_COMMAND = "continuar";
+
         private static char[] CHARACTERS = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' }; //Letras del alfabeto y dígitos numéricos
         public static string[] numbers_sounds = new string[9999];
 
-        public static string[] GEOMETRIC_COMMANDS = { "Enfocar", "Girar", "Mover", "Rotar" }; //Comandos de control geométrico
-        public static string[] MENU_COMMANDS = { "Cancelar", "Siguiente", "Anterior" }; //Comandos para navegar por los menús
-        public static string[] DICTATION_COMMANDS = { "Borrar", "Aceptar" }; //Comandos para controlar los dictados
+        public static string[] GEOMETRIC_COMMANDS = { "enfocar", "girar", "mover", "rotar" }; //Comandos de control geométrico
+        public static string[] MENU_COMMANDS = { "cancelar", "siguiente", "anterior" }; //Comandos para navegar por los menús
+        public static string[] DICTATION_COMMANDS = { "borrar", "aceptar" }; //Comandos para controlar los dictados
         public static string[] CHARACTERS_SOUNDS = { "vocal a", "letra be", "letra ce", "letra de", "vocal e", "letra efe", "letra ge", "letra ache", "vocal i", "letra jota", "letra ka",
                                                        "letra ele", "letra eme", "letra ene", "vocal o", "letra pe", "letra ku", "letra ere", "letra ese", "letra te", "vocal u", "letra uve", 
                                                        "letra dobleu", "letra equis", "letra igriega", "letra zeta", "cero", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve" }; //Representación fonética de las letras del alfabeto y los números del 0 al 9
@@ -206,6 +209,7 @@ namespace RealMOL
         public static Choices GetGrammar(CommandNode commandTree)
         {
             grammar = new Choices();
+            grammar.Add(UNLOCK_COMMAND);
             foreach (string command in GEOMETRIC_COMMANDS)
             {
                 grammar.Add(command);
