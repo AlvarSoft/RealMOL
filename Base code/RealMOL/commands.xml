@@ -652,6 +652,14 @@
       </page>
     </menu>
     <command>
+      <text>Centrar</text>
+      <code>center</code>
+    </command>
+    <command>
+      <text>Restablecer</text>
+      <code>reset</code>
+    </command>
+    <command>
       <text>Salir</text>
       <code>QUIT</code>
     </command>

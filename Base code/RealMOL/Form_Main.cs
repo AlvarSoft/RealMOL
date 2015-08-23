@@ -649,6 +649,69 @@ namespace RealMOL
         }
 
         /*
+         * Función: HandleCommandByNumber
+         * Descripción: Función que maneja los comandos del menú por numero
+         * Autor: Christian Vargas
+         * Fecha de creación: 22/08/15
+         * Fecha de modificación: --/--/--
+         * Entradas: fullCommand (string, variable que contiene el comando que hasta ahora se ha recibido), number (int, numero de opción dicho por le usuario)
+         * Salidas: Menú actualizado en la pantalla del Oculus
+         */
+        private void HandleCommandByNumber(string fullCommand, int number)
+        {
+            //Se inicia una variable en 0 que permite saber cuántos subcomandos han sido reconocidos exitosamente
+            int count = 0;
+            //Se inicia el nodo actual en el menú raíz del árbol de comandos
+            CommandNode actualNode = commandTree.children.ElementAt(0);
+            //Se comprueba si el usuario aun no navega a un submenú, en cuyo caso se reconoce automáticamente un subcomando como valido
+            if (fullCommand == "")
+            {
+                count++;
+            }
+            //Caso contrario, se busca el submenú actual
+            else
+            {
+                //Se parte el comando completo en subcomandos que esta separados por espacios en blanco, por cada comando se busca encontrar su nodo correspondiente en el árbol de comandos
+                foreach (string subCommand in fullCommand.Split(' '))
+                {
+                    foreach (CommandNode page in actualNode.children)
+                    {
+                        foreach (CommandNode son in page.children)
+                        {
+                            //Si el texto del hijo actual corresponde con el subcomando se establece el nodo actual en el hijo y se aumenta la cantidad de subcomandos reconocidos 
+                            if (son.text == subCommand)
+                            {
+                                actualNode = son;
+                                count++;
+                            }
+                        }
+                    }
+                }
+            }
+            //Si la cantidad de subcomandos reconocidos es igual a la cantidad de subcomandos entonces el comando era válido
+            if (count == fullCommand.Split(' ').Count())
+            {
+                //Se comprueba que el numero este dentro del rango valido, de ser así se procesa el comando correspondiente.
+                if (actualNode.children.ElementAt(menuPage - 1).children.Count >= number)
+                {
+                    ProcessAudioCommand(actualNode.children.ElementAt(menuPage - 1).children.ElementAt(number - 1).text);
+                }
+                //Caso contrario se rechaza el comando
+                else
+                {
+                    RejectSpeech();
+                }
+            }
+            //Caso contrario, el comando era invalido
+            else
+            {
+                QuitMenu(false);
+                Console.WriteLine("Un comando inválido no se detectó antes, invalidado en HandleCommandByNumber al generar el código del comando, comando:" + fullCommand);
+                RejectSpeech();
+            }
+        }
+
+        /*
          * Función: HandlePageCommands
          * Descripción: Función que maneja los comandos de control de paginas
          * Autor: Christian Vargas
@@ -1059,6 +1122,11 @@ namespace RealMOL
                 {
                     RejectSpeech();
                 }
+            }
+            //Se comprueba si el carácter es numérico, de ser así lo manejamos con la función correspondiente
+            else if (char.IsNumber(character))
+            {
+                HandleCommandByNumber(newCommand, int.Parse(character.ToString()));
             }
             //Caso contrario se rechaza el comando 
             else
