@@ -426,7 +426,9 @@ class RealMOL:
     """
     def __menu_ray(self):
         #Se carga el menú con su texto
-        menuText = "Advertencia: La renderizacion se pierde al usar cualquier comando, por lo que los comandos serán bloqueados hasta que usted diga –Continuar-: \n \nCancelar Aceptar"
+        menuText = "Advertencia.- La renderizacion se pierde al usar \n"
+        menuText += "cualquier comando, por lo que los comandos seran \n"
+        menuText += "bloqueados hasta que usted diga -Continuar- \n \n        Cancelar     Aceptar"
         #Se imprime el menú    
         self.__print_text(menuText)
 

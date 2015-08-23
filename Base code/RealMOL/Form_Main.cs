@@ -298,6 +298,14 @@ namespace RealMOL
                         simpleSound.Play();
                     }
                 }
+                //Si el usuario intenta usar otro comando, se le informa que actualmente está bloqueado el uso de comandos
+                else if (e.Result.Text == commandTree.children.ElementAt(0).text || GrammarGenerator.GEOMETRIC_COMMANDS.Contains(e.Result.Text))
+                {
+                    using (SoundPlayer simpleSound = new SoundPlayer("locked.wav"))
+                    {
+                        simpleSound.Play();
+                    }
+                }
             }
             else
             {
@@ -534,6 +542,7 @@ namespace RealMOL
             hearingSel = false;
             hearingResI = false;
             hearingFontSize = false;
+            displayingRayWarning = false;
             sendBytes = Encoding.ASCII.GetBytes("menu clear");
             udpClient.Send(sendBytes, sendBytes.Length);
             waiting = false;
@@ -1068,7 +1077,7 @@ namespace RealMOL
                 else if (displayingRayWarning)
                 {
                     //Se forma el comando final, se elimina el menú y se envía el comando
-                    message = message.Replace("PREPARERAY", "ray");
+                    message = message.Replace("PREPARE_RAY", "ray");
                     QuitMenu(true);
                     sendBytes = Encoding.ASCII.GetBytes(message);
                     udpClient.Send(sendBytes, sendBytes.Length);
@@ -1291,6 +1300,7 @@ namespace RealMOL
             }
             //Se comprueba si el comando requiere que se muestren los títulos de las moléculas, de ser así se establece la variable correspondiente
             if (message.Contains("SHOW_NAME"))
+
             {
                 showingTitles = true;
             }
@@ -1322,7 +1332,7 @@ namespace RealMOL
                 EnableWindowInput();
             }
             //Se comprueba si el comando está listo para ser procesado por PyMOL, de ser así se limpia el comando y se elimina el menú
-            if (IsCommand(tempCommand) && (!showingTitles && !hearingMol && !hearingResI && !hearingSel && !hearingFontSize))
+            if (IsCommand(tempCommand) && (!InSpecialMenu()))
             {
                 foreach (string subMessage in message.Split(' '))
                 {

@@ -100,6 +100,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="locked.wav">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Oculus.py">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -109,7 +112,9 @@
     <Content Include="repeat.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="unlock.wav" />
+    <Content Include="unlock.wav">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="Resources\start.png" />
     <None Include="Resources\reload.png" />
     <Content Include="tracking.wav">
