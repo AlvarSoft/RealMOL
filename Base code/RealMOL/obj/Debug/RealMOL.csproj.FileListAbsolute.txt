@@ -54,3 +54,24 @@ C:\Users\Christian010\Documents\GitHub\RealMOL\Base code\RealMOL\obj\Debug\RealM
 C:\Users\Christian010\Documents\GitHub\RealMOL\Base code\RealMOL\bin\Debug\tracking.wav
 C:\Users\Christian010\Documents\GitHub\RealMOL\Base code\RealMOL\bin\Debug\unlock.wav
 C:\Users\Christian010\Documents\GitHub\RealMOL\Base code\RealMOL\bin\Debug\locked.wav
+C:\Users\Jorge\Documents\Proyecto Terminal\RealMol\Base code\RealMOL\bin\Debug\RealMOL.exe.config
+C:\Users\Jorge\Documents\Proyecto Terminal\RealMol\Base code\RealMOL\obj\Debug\RealMOL.exe
+C:\Users\Jorge\Documents\Proyecto Terminal\RealMol\Base code\RealMOL\obj\Debug\RealMOL.pdb
+C:\Users\Jorge\Documents\Proyecto Terminal\RealMol\Base code\RealMOL\bin\Debug\commands.xml
+C:\Users\Jorge\Documents\Proyecto Terminal\RealMol\Base code\RealMOL\bin\Debug\locked.wav
+C:\Users\Jorge\Documents\Proyecto Terminal\RealMol\Base code\RealMOL\bin\Debug\Oculus.py
+C:\Users\Jorge\Documents\Proyecto Terminal\RealMol\Base code\RealMOL\bin\Debug\ready.wav
+C:\Users\Jorge\Documents\Proyecto Terminal\RealMol\Base code\RealMOL\bin\Debug\repeat.wav
+C:\Users\Jorge\Documents\Proyecto Terminal\RealMol\Base code\RealMOL\bin\Debug\unlock.wav
+C:\Users\Jorge\Documents\Proyecto Terminal\RealMol\Base code\RealMOL\bin\Debug\tracking.wav
+C:\Users\Jorge\Documents\Proyecto Terminal\RealMol\Base code\RealMOL\bin\Debug\understood.wav
+C:\Users\Jorge\Documents\Proyecto Terminal\RealMol\Base code\RealMOL\bin\Debug\RealMOL.exe
+C:\Users\Jorge\Documents\Proyecto Terminal\RealMol\Base code\RealMOL\bin\Debug\RealMOL.pdb
+C:\Users\Jorge\Documents\Proyecto Terminal\RealMol\Base code\RealMOL\bin\Debug\SharpDX.dll
+C:\Users\Jorge\Documents\Proyecto Terminal\RealMol\Base code\RealMOL\bin\Debug\SharpDX.XInput.dll
+C:\Users\Jorge\Documents\Proyecto Terminal\RealMol\Base code\RealMOL\bin\Debug\SharpDX.xml
+C:\Users\Jorge\Documents\Proyecto Terminal\RealMol\Base code\RealMOL\bin\Debug\SharpDX.XInput.xml
+C:\Users\Jorge\Documents\Proyecto Terminal\RealMol\Base code\RealMOL\obj\Debug\RealMOL.csprojResolveAssemblyReference.cache
+C:\Users\Jorge\Documents\Proyecto Terminal\RealMol\Base code\RealMOL\obj\Debug\RealMOL.Form_Main.resources
+C:\Users\Jorge\Documents\Proyecto Terminal\RealMol\Base code\RealMOL\obj\Debug\RealMOL.Properties.Resources.resources
+C:\Users\Jorge\Documents\Proyecto Terminal\RealMol\Base code\RealMOL\obj\Debug\RealMOL.csproj.GenerateResource.Cache
