@@ -16,8 +16,11 @@ from pymol.vfont import plain
 import ovrsdk #Utilizado para acceder a los datos de posición del Oculus
 import socket #Utilizado para recibir los comandos por parte del Kinect
 
+import re
+
 UDP_IP = "127.0.0.1" #Dirección IP local
-UDP_PORT = 5005 #Puerto por donde llegaran los comandos del Kinect
+IN_PORT = 5005 #Puerto por donde llegaran los comandos del Kinect
+OUT_PORT = 5006 #Puerto por donde saldrám los comandos a Kinect
 
 XMLFILE = "commands.xml" #Archivo con los comandos
 
@@ -133,7 +136,7 @@ class RealMOL:
             self.prevp = [0, 0]
         #Socket que se utilizara para escuchar los comandos del Kinect
         self.sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-        self.sock.bind((UDP_IP, UDP_PORT))
+        self.sock.bind((UDP_IP, IN_PORT))
         #Establecemos el socket como no bloqueante para poder recibir comandos sin detener el rastreo del Oculus
         self.sock.setblocking(0)
         #Buffer en donde se guardaran los comandos del Kinect
@@ -535,10 +538,7 @@ class RealMOL:
                 return
             #Para comprobar que la molécula era válida buscamos el archivo pdb descargado
             if (os.path.exists(self.data[6:] + ".pdb")):
-                #Se informa al programa en C# que se encontró la molecula
-                print("Enviando respuesta a C#")
-                self.sock.sendto("200".encode(), (UDP_IP, 5006))
-                print("Respuesta Enviada")
+                self.sock.sendto("200".encode(), (UDP_IP, OUT_PORT))
                 #Se abre el archivo para leer y buscar el titulo
                 file = open(self.data[6:] + ".pdb", "r")
                 #Inicializamos el texto que ir formando el título de la molécula
@@ -571,13 +571,20 @@ class RealMOL:
                 #Finalmente se añade el título a la lista de moléculas, el código de la molécula es la llave y el titulo el valor
                 self.mollist[self.data[6:]] = title
             else:
-                self.sock.sendto("500".encode(), (UDP_IP, 5006));
+                self.sock.sendto("500".encode(), (UDP_IP, OUT_PORT));
         #Si el usuario solicito un ray, entonces bloqueamos el uso del movimiento
         elif command == "ray":
             self.moveBlocked = True
             pymol.cmd.ray()
         #El comando viene limpio, se ejecuta en PyMOL
         else:
+            if "select" in command:
+                if re.search("select \w+ ,resi \d+(\+\d+)*",command):
+                    self.sock.sendto("200".encode(),(UDP_IP,OUT_PORT))
+                    print("Enviado 200 a c#")
+                else:
+                    self.sock.sendto("500".encode(),(UDP_IP,OUT_PORT))
+                    print("Enviado 500 a c#")
             pymol.cmd.do(command)
         self.running = True
 

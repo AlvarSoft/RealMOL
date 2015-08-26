@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Net;
 using System.Net.Sockets;
 using System.Diagnostics;
 using System.Threading;
@@ -30,9 +31,13 @@ namespace RealMOL
         private const uint MAXTHUMBVAL = 32767; //Valor máximo devuelto por la palanca del control de Xbox 360
 
         private const string IP = "127.0.0.1"; //Dirección IP local
-        private const int PORT = 5005; //Puerto por donde se enviaran los comandos a PyMOL
+        private const int OUT_PORT = 5005; //Puerto por donde se enviaran los comandos a PyMOL
+        private const int IN_PORT = 5006; //Puerto donde se recibiran las respuestas de los comando PyMOL
+        private IPEndPoint endPoint; //Punt donde el Servidor de conectará
         private UdpClient udpClient; //Cliente que enviara los comandos a PyMOL
+        private UdpClient udpServer; //Cliente que recibirá las respuestas de los comandos PyMOL
         private Byte[] sendBytes; //Cadena de Bytes que se enviara con los comandos a PyMOL
+        private Byte[] recvBytes;
         private CommandNode commandTree; //Raíz del árbol de comandos, el árbol de comandos guarda todos menús validos junto con los códigos reconocidos por PyMOL
         private string newCommand = ""; //Variable que guarda los comandos que el usuario ha dicho y que aún no llegan a una terminación
         private string molCode = ""; //Variable que guarda el código de una molécula que es dictada
@@ -47,6 +52,9 @@ namespace RealMOL
         private bool hearingFontSize = false; //Variable que permite saber si actualmente se está escuchando el tamaño de una fuente
         private bool displayingRayWarning = false; //Variable que permite saber si actualmente se está mostrando una advertencia de ray
         private bool blocked = false; //Variable que indica si la entrada de comandos se encuentra actualmente bloqueada
+
+        private List<string> dowloadedMol; //Arreglo donde se guardan las moleculas descargadas
+        private List<string> selectedMol; //Arrgelo donde se guardan las moleculas seleccionadas
 
         private Controller xboxControl; //Control de Xbox 360
         private uint xboxControlSensitivity = 3; //Valor de sensibilidad para el control de Xbox 360
@@ -864,7 +872,7 @@ namespace RealMOL
         private void HandleDictationCommands(string command)
         {
             //Variable que guarda el código generado
-            string message;
+            string message, tempname;
             //Se comprueba si el menú actual es el de la raíz, en caso de ser así se establece el comando correspondiente 
             if (newCommand == "")
             {
@@ -1000,9 +1008,15 @@ namespace RealMOL
                     if (molCode.Length == 4)
                     {
                         message = message.Replace("HEAR_MOL", molCode);
+                        tempname = molCode;
                         QuitMenu(true);
                         sendBytes = Encoding.ASCII.GetBytes(message);
                         udpClient.Send(sendBytes, sendBytes.Length);
+                        recvBytes = udpServer.Receive(ref endPoint);
+                        if(Encoding.ASCII.GetString(recvBytes).ToString() == "200")
+                        {
+                            dowloadedMol.Add(tempname);
+                        }
                     }
                     //Caso contrario se rechaza el comando 
                     else
@@ -1045,9 +1059,15 @@ namespace RealMOL
                     {
                         message = message.Replace("IGNOREres", selName);
                         message = message.Replace("HEAR_SEL_RESI", resISel);
+                        tempname = selName;
                         QuitMenu(true);
                         sendBytes = Encoding.ASCII.GetBytes(message);
                         udpClient.Send(sendBytes, sendBytes.Length);
+                        recvBytes = udpServer.Receive(ref endPoint);
+                        if (Encoding.ASCII.GetString(recvBytes).ToString() == "200")
+                        {
+                            selectedMol.Add(tempname);
+                        }
                     }
                     //Caso contrario se rechaza el comando 
                     else
@@ -1612,9 +1632,13 @@ namespace RealMOL
             //Se genera el árbol de comandos
             commandTree = new CommandNode(Types.Root, "", "");
             commandTree.CreateTree("commands.xml");
+            dowloadedMol = new List<string>();
+            selectedMol = new List<string>();
             //Se cargan los dispositivos y se inicializa el cliente UDP
             LoadDevices();
-            udpClient = new UdpClient(IP, PORT);
+            udpClient = new UdpClient(IP, OUT_PORT);
+            endPoint = new IPEndPoint(IPAddress.Parse(IP), IN_PORT);
+            udpServer = new UdpClient(endPoint);
         }
 
         /*
