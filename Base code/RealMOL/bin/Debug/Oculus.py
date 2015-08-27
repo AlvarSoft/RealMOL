@@ -538,6 +538,7 @@ class RealMOL:
                 return
             #Para comprobar que la molécula era válida buscamos el archivo pdb descargado
             if (os.path.exists(self.data[6:] + ".pdb")):
+                #Se informa al programa en C# que se encontró la molécula
                 self.sock.sendto("200".encode(), (UDP_IP, OUT_PORT))
                 #Se abre el archivo para leer y buscar el titulo
                 file = open(self.data[6:] + ".pdb", "r")
@@ -571,6 +572,7 @@ class RealMOL:
                 #Finalmente se añade el título a la lista de moléculas, el código de la molécula es la llave y el titulo el valor
                 self.mollist[self.data[6:]] = title
             else:
+                #Se informa al programa en C# que no se encontró la molécula
                 self.sock.sendto("500".encode(), (UDP_IP, OUT_PORT));
         #Si el usuario solicito un ray, entonces bloqueamos el uso del movimiento
         elif command == "ray":

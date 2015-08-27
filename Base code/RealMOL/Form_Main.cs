@@ -37,7 +37,7 @@ namespace RealMOL
         private UdpClient udpClient; //Cliente que enviara los comandos a PyMOL
         private UdpClient udpServer; //Cliente que recibirá las respuestas de los comandos PyMOL
         private Byte[] sendBytes; //Cadena de Bytes que se enviara con los comandos a PyMOL
-        private Byte[] recvBytes;
+        private Byte[] recvBytes; //Cadena de Bytes que recibirá las respuestas de PyMOL
         private CommandNode commandTree; //Raíz del árbol de comandos, el árbol de comandos guarda todos menús validos junto con los códigos reconocidos por PyMOL
         private string newCommand = ""; //Variable que guarda los comandos que el usuario ha dicho y que aún no llegan a una terminación
         private string molCode = ""; //Variable que guarda el código de una molécula que es dictada
@@ -53,8 +53,8 @@ namespace RealMOL
         private bool displayingRayWarning = false; //Variable que permite saber si actualmente se está mostrando una advertencia de ray
         private bool blocked = false; //Variable que indica si la entrada de comandos se encuentra actualmente bloqueada
 
-        private List<string> dowloadedMol; //Arreglo donde se guardan las moleculas descargadas
-        private List<string> selectedMol; //Arrgelo donde se guardan las moleculas seleccionadas
+        private List<string> dowloadedMol; //Arreglo donde se guardan las moléculas descargadas
+        private List<string> selectedMol; //Arrgelo donde se guardan las moléculas seleccionadas
 
         private Controller xboxControl; //Control de Xbox 360
         private uint xboxControlSensitivity = 3; //Valor de sensibilidad para el control de Xbox 360
@@ -872,7 +872,9 @@ namespace RealMOL
         private void HandleDictationCommands(string command)
         {
             //Variable que guarda el código generado
-            string message, tempname;
+            string message;
+            //Variable que respalda el código generado
+            string tempname;
             //Se comprueba si el menú actual es el de la raíz, en caso de ser así se establece el comando correspondiente 
             if (newCommand == "")
             {
@@ -1004,7 +1006,8 @@ namespace RealMOL
                 //Se comprueba si se está escuchando un código de molécula 
                 else if (hearingMol)
                 {
-                    //Se comprueba si el código ya está completo, de ser así se forma el comando final, se elimina el menú y se envía el comando. 
+                    //Se comprueba si el código ya está completo, de ser así se forma el comando final, se elimina el menú y se envía el comando
+                    //Si la respuesta de PyMOL indica que la molécula era válida, entonces esta se agrega a la lista de moléculas descargadas
                     if (molCode.Length == 4)
                     {
                         message = message.Replace("HEAR_MOL", molCode);
@@ -1055,6 +1058,7 @@ namespace RealMOL
                 else if (hearingResI)
                 {
                     //Se comprueba que si hayan números seleccionados, de ser así se forma el comando final, se elimina el menú y se envía el comando.
+                    //Si la respuesta de PyMOL indica que la selección era válida, entonces esta se agrega a la lista de selecciones 
                     if (resISel != "")
                     {
                         message = message.Replace("IGNOREres", selName);
@@ -1632,9 +1636,10 @@ namespace RealMOL
             //Se genera el árbol de comandos
             commandTree = new CommandNode(Types.Root, "", "");
             commandTree.CreateTree("commands.xml");
+            //Se inicializan las listas
             dowloadedMol = new List<string>();
             selectedMol = new List<string>();
-            //Se cargan los dispositivos y se inicializa el cliente UDP
+            //Se cargan los dispositivos y se inicializan los clientes y servidores UDP
             LoadDevices();
             udpClient = new UdpClient(IP, OUT_PORT);
             endPoint = new IPEndPoint(IPAddress.Parse(IP), IN_PORT);
