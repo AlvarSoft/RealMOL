@@ -51,9 +51,10 @@ namespace RealMOL
         private bool hearingResI = false; //Variable que permite saber si actualmente se están escuchando los enteros de una selección
         private bool hearingFontSize = false; //Variable que permite saber si actualmente se está escuchando el tamaño de una fuente
         private bool displayingRayWarning = false; //Variable que permite saber si actualmente se está mostrando una advertencia de ray
+        private bool displayingMolList = false; //Variable que permite saber si actualmente se está mostrando la lista de moléculas
         private bool blocked = false; //Variable que indica si la entrada de comandos se encuentra actualmente bloqueada
 
-        private List<string> dowloadedMol; //Arreglo donde se guardan las moléculas descargadas
+        private List<string> downloadedMol; //Arreglo donde se guardan las moléculas descargadas
         private List<string> selectedMol; //Arrgelo donde se guardan las moléculas seleccionadas
 
         private Controller xboxControl; //Control de Xbox 360
@@ -69,6 +70,8 @@ namespace RealMOL
         private string geometricCommand = ""; //Comando geométrico actual
 
         private const int SLEEPTIME = 150; //Tiempo de espera entre lectura de botones del control de Xbox 360
+
+        private const int MAXLIST = 5; //Cantidad máxima de elementos que se muestran en una lista
 
         /*
          * Función: GetKinectRecognizer
@@ -551,6 +554,7 @@ namespace RealMOL
             hearingResI = false;
             hearingFontSize = false;
             displayingRayWarning = false;
+            displayingMolList = false;
             sendBytes = Encoding.ASCII.GetBytes("menu clear");
             udpClient.Send(sendBytes, sendBytes.Length);
             waiting = false;
@@ -567,34 +571,43 @@ namespace RealMOL
          */
         private int GetPageCount(string fullCommand)
         {
-            //Se inicia una variable en 0 que permite saber cuántos subcomandos han sido reconocidos exitosamente
-            int count = 0;
-            //Se inicia el nodo actual en el menú raíz del árbol de comandos
-            CommandNode actualNode = commandTree.children.ElementAt(0);
-            //Se parte el comando completo en subcomandos que esta separados por espacios en blanco, por cada comando se busca encontrar su nodo correspondiente en el árbol de comandos
-            foreach (string subCommand in fullCommand.Split(' '))
+            //Si estamos mostrando una lista de moléculas, entonces devolvemos la cantidad de páginas en las que se mostraran
+            if (displayingMolList)
             {
-                foreach (CommandNode page in actualNode.children)
+                return (int)Math.Ceiling(downloadedMol.Count() / (float)MAXLIST);
+            }
+            //Caso contrario, buscamos la cantidad de páginas para un menú del árbol de comandos
+            else
+            {
+                //Se inicia una variable en 0 que permite saber cuántos subcomandos han sido reconocidos exitosamente
+                int count = 0;
+                //Se inicia el nodo actual en el menú raíz del árbol de comandos
+                CommandNode actualNode = commandTree.children.ElementAt(0);
+                //Se parte el comando completo en subcomandos que esta separados por espacios en blanco, por cada comando se busca encontrar su nodo correspondiente en el árbol de comandos
+                foreach (string subCommand in fullCommand.Split(' '))
                 {
-                    foreach (CommandNode son in page.children)
+                    foreach (CommandNode page in actualNode.children)
                     {
-                        if (son.text == subCommand)
+                        foreach (CommandNode son in page.children)
                         {
-                            //Si el texto del hijo actual corresponde con el subcomando se establece el nodo actual en el hijo y se aumenta la cantidad de subcomandos reconocidos 
-                            actualNode = son;
-                            count++;
+                            if (son.text == subCommand)
+                            {
+                                //Si el texto del hijo actual corresponde con el subcomando se establece el nodo actual en el hijo y se aumenta la cantidad de subcomandos reconocidos 
+                                actualNode = son;
+                                count++;
+                            }
                         }
                     }
                 }
-            }
-            //Si la cantidad de subcomandos reconocidos es igual a la cantidad de subcomandos entonces el comando era válido, se regresa el total de páginas del menú, caso contrario se devuelve 0
-            if (count == fullCommand.Split(' ').Count())
-            {
-                return actualNode.children.Count;
-            }
-            else
-            {
-                return 0;
+                //Si la cantidad de subcomandos reconocidos es igual a la cantidad de subcomandos entonces el comando era válido, se regresa el total de páginas del menú, caso contrario se devuelve 0
+                if (count == fullCommand.Split(' ').Count())
+                {
+                    return actualNode.children.Count;
+                }
+                else
+                {
+                    return 0;
+                }
             }
         }
 
@@ -693,7 +706,21 @@ namespace RealMOL
          */
         private bool InSpecialMenu()
         {
-            return (showingTitles || hearingMol || hearingSel || hearingResI || hearingFontSize || displayingRayWarning);
+            return (showingTitles || hearingMol || hearingSel || hearingResI || hearingFontSize || displayingRayWarning || displayingMolList);
+        }
+
+        /*
+         * Función: InListingMenu
+         * Descripción: Función que averigua si se está desplegando una lista de objetos
+         * Autor: Christian Vargas
+         * Fecha de creación: 30/08/15
+         * Fecha de modificación: --/--/--
+         * Entradas: --
+         * Salidas: (bool, variable que indica si se está desplegando una lista de objetos)
+         */
+        private bool InListingMenu()
+        {
+            return displayingMolList;
         }
 
         /*
@@ -848,7 +875,7 @@ namespace RealMOL
             else
             {
                 //Si el menú es uno de los menús especiales sin posibilidad de páginas se rechaza el comando
-                if (InSpecialMenu())
+                if (InSpecialMenu() && !InListingMenu())
                 {
                     RejectSpeech();
                 }
@@ -1007,7 +1034,7 @@ namespace RealMOL
                 else if (hearingMol)
                 {
                     //Se comprueba si el código ya está completo, de ser así se forma el comando final, se elimina el menú y se envía el comando
-                    //Si la respuesta de PyMOL indica que la molécula era válida, entonces esta se agrega a la lista de moléculas descargadas
+                    //Si la respuesta de PyMOL indica que la molécula era válida, entonces esta se agrega a la lista de moléculas descargadas (la lista se ordena alfabéticamente)
                     if (molCode.Length == 4)
                     {
                         message = message.Replace("HEAR_MOL", molCode);
@@ -1018,7 +1045,8 @@ namespace RealMOL
                         recvBytes = udpServer.Receive(ref endPoint);
                         if(Encoding.ASCII.GetString(recvBytes).ToString() == "200")
                         {
-                            dowloadedMol.Add(tempname);
+                            downloadedMol.Add(tempname);
+                            downloadedMol.Sort();
                         }
                     }
                     //Caso contrario se rechaza el comando 
@@ -1198,6 +1226,24 @@ namespace RealMOL
                     RejectSpeech();
                 }
             }
+            //Se comprueba si actualmente se está mostrando una lista de moléculas
+            else if (displayingMolList)
+            {
+                //Se comprueba si el número es válido, de ser así se forma el comando final, se elimina el menú y se envía el comando
+                if (((menuPage - 1) * MAXLIST) + int.Parse(character.ToString()) <= downloadedMol.Count)
+                {
+                    message = message.Replace("IGNORErepresentation", "");
+                    message = message.Replace("LIST_MOL", "(" + downloadedMol[((menuPage - 1) * MAXLIST) + int.Parse(character.ToString()) - 1] + ")");
+                    QuitMenu(true);
+                    sendBytes = Encoding.ASCII.GetBytes(message);
+                    udpClient.Send(sendBytes, sendBytes.Length);
+                }
+                //Caso contrario se rechaza el comando 
+                else
+                {
+                    RejectSpeech();
+                }
+            }
             //Se comprueba si el carácter es numérico, de ser así lo manejamos con la función correspondiente
             else if (char.IsNumber(character))
             {
@@ -1344,9 +1390,15 @@ namespace RealMOL
             {
                 hearingFontSize = true;
             }
+            //Se comprueba si el comando requiere advertir al usuario sobre la renderización, de ser así se establecen las variables correspondientes
             else if (message.Contains("PREPARE_RAY"))
             {
                 displayingRayWarning = true;
+            }
+            //Se comprueba si el comando requiere mostrar la lista de moléculas, de ser así se establecen las variables correspondientes
+            else if (message.Contains("LIST_MOL"))
+            {
+                displayingMolList = true;
             }
             //Se comprueba si el comando requiere que se finalice la ejecución del el programa, de ser así se para el reconocimiento de voz, la actualización del control y se permite la entrada de datos en la ventana del programa
             else if (message.Contains("QUIT"))
@@ -1383,7 +1435,7 @@ namespace RealMOL
             else
             {
                 //Si estamos en un menú sin páginas entonces solo se antepone la palabra menú en el comando, caso contrario también se envía el número de página (establecido en 1)
-                if (InSpecialMenu())
+                if (InSpecialMenu() && !InListingMenu())
                 {
                     message = "menu " + message;
                 }
@@ -1637,7 +1689,7 @@ namespace RealMOL
             commandTree = new CommandNode(Types.Root, "", "");
             commandTree.CreateTree("commands.xml");
             //Se inicializan las listas
-            dowloadedMol = new List<string>();
+            downloadedMol = new List<string>();
             selectedMol = new List<string>();
             //Se cargan los dispositivos y se inicializan los clientes y servidores UDP
             LoadDevices();

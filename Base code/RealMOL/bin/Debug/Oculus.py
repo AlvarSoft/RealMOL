@@ -28,6 +28,8 @@ MAXLINEREAD = 10 #Cantidad de líneas a ser leídas para buscar los títulos de 
 MAXLINESIZE = 55 #Tamaño máximo para una línea a ser impresa en pantalla
 LINESEPARATION = 3 #Separación que existe entre línea y línea al ser impresas pantalla
 
+MAXLIST = 5 #Cantidad máxima de elementos a ser mostrados en una lista
+
 POSITION = [0, 500, 0]
 AXES = [[2.0,0.0,0.0],[0.0,2.0,0.0],[0.0,0.0,2.0]]
 TEXTNAME = "reserved_text"
@@ -434,6 +436,43 @@ class RealMOL:
         menuText += "bloqueados hasta que usted diga -Continuar- \n \n        Cancelar     Aceptar"
         #Se imprime el menú    
         self.__print_text(menuText)
+        
+    """
+    Función: menu_list_mol
+    Descripción: Descripción: Función que imprime la lista de moléculas para elegir
+    Autor: Christian Vargas
+    Fecha de creación: 30/08/15
+    Fecha de modificación: --/--/--
+    Entradas: page (int, la página actual)
+    Salidas: Mensaje en pantalla
+    """
+    def __menu_list_mol(self, page):
+        #Se comprueba si no hay moléculas cargadas, de ser así se le informa al usuario en el texto del menú
+        if len(self.mollist.items()) == 0:
+            menuText = "No hay moleculas\n"
+            menuText += "\n \n   Cancelar"
+        #Caso contrario se enumeran las moléculas
+        else:  
+            #Se carga el menú con su texto inicial
+            menuText = "Mencione el numero de la molecula\n \n"
+            #Se obtiene el punto de partida para hacer el listado de moléculas
+            start = (page-1)*MAXLIST
+            #Se obtiene el punto de partida para hacer el listado de moléculas 
+            if len(self.mollist.items()[start:]) < MAXLIST:
+                end = len(self.mollist.items())
+            else:
+                end = start+MAXLIST
+            #Se itera sobre las moléculas a listar, y se van añadiendo al texto del menú con su número correspondiente
+            for i in range (start, end):
+                 menuText += str(i-start+1) + ".- " + sorted(self.mollist.items())[i][0] + "\n"
+            #Se comprueba si son necesarias más de 1 página para listar todas las moleculas, de ser así se imprime el pie de menú correspondiente
+            if len(self.mollist.items()) > MAXLIST:
+                menuText += "\n \n <- Anterior Cancelar Siguiente ->"
+            #Caso contrario, solo se imprime la opción de cancelar
+            else:
+                menuText += "\n \n             Cancelar"        
+        #Se imprime el menú         
+        self.__print_text(menuText)
 
     """
     Función: handle_menu
@@ -481,6 +520,10 @@ class RealMOL:
         #Si estamos mostrando la advertencia del ray, entonces manejamos el menú con la función correspondiente y la función actual termina
         elif "PREPARE_RAY" in menu:
             self.__menu_ray()
+            return
+        #Si estamos mostrando la lista de moléculas, entonces manejamos el menú con la función correspondiente y la función actual termina
+        elif "LIST_MOL" in menu:
+            self.__menu_list_mol(int(menu.rsplit(' ', 1)[1]))
             return
         #Se crea la variable que guardara el texto del menú
         menuText = ""
