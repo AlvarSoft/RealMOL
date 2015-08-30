@@ -15,44 +15,132 @@
       <text>Mostrar</text>
       <code>show</code>
       <page>
+        <command>
+          <text>Todo</text>
+          <code></code>
+        </command>
+        <command>
+          <text>Molecula</text>
+          <code>LIST_MOL</code>
+        </command>
         <menu>
           <text>Representacion</text>
           <code>IGNORErepresentation</code>
           <page>
-            <command>
+            <menu>
               <text>Secundaria</text>
               <code>cartoon</code>
-            </command>
-            <command>
+              <page>
+                <command>
+                  <text>Todo</text>
+                  <code></code>
+                </command>
+                <command>
+                  <text>Molecula</text>
+                  <code>,LIST_MOL</code>
+                </command>
+              </page>
+            </menu>
+            <menu>
               <text>Lineas</text>
               <code>lines</code>
-            </command>
-            <command>
+              <page>
+                <command>
+                  <text>Todo</text>
+                  <code></code>
+                </command>
+                <command>
+                  <text>Molecula</text>
+                  <code>,LIST_MOL</code>
+                </command>
+              </page>
+            </menu>
+            <menu>
               <text>Esferas</text>
               <code>spheres</code>
-            </command>
-            <command>
+                <page>
+                <command>
+                  <text>Todo</text>
+                  <code></code>
+                </command>
+                <command>
+                  <text>Molecula</text>
+                  <code>,LIST_MOL</code>
+                </command>
+              </page>
+            </menu>
+            <menu>
               <text>Malla</text>
               <code>mesh</code>
-            </command>
-            <command>
+                <page>
+                <command>
+                  <text>Todo</text>
+                  <code></code>
+                </command>
+                <command>
+                  <text>Molecula</text>
+                  <code>,LIST_MOL</code>
+                </command>
+              </page>
+            </menu>
+            <menu>
               <text>Cinta</text>
               <code>ribbon</code>
-            </command>
+              <page>
+                <command>
+                  <text>Todo</text>
+                  <code></code>
+                </command>
+                <command>
+                  <text>Molecula</text>
+                  <code>,LIST_MOL</code>
+                </command>
+              </page>
+            </menu>
           </page>
           <page>
-            <command>
+            <menu>
               <text>Bastones</text>
               <code>sticks</code>
-            </command>
-            <command>
+            <page>
+                <command>
+                  <text>Todo</text>
+                  <code></code>
+                </command>
+                <command>
+                  <text>Molecula</text>
+                  <code>,LIST_MOL</code>
+                </command>
+              </page>
+            </menu>
+            <menu>
               <text>Puntos</text>
               <code>dots</code>
-            </command>
-            <command>
+              <page>
+                <command>
+                  <text>Todo</text>
+                  <code></code>
+                </command>
+                <command>
+                  <text>Molecula</text>
+                  <code>,LIST_MOL</code>
+                </command>
+              </page>
+            </menu>
+            <menu>
               <text>Superficie</text>
               <code>surface</code>
-            </command>
+              <page>
+                <command>
+                  <text>Todo</text>
+                  <code></code>
+                </command>
+                <command>
+                  <text>Molecula</text>
+                  <code>,LIST_MOL</code>
+                </command>
+              </page>
+            </menu>
           </page>
         </menu>
       </page>
@@ -61,44 +149,132 @@
       <text>Ocultar</text>
       <code>hide</code>
       <page>
+        <command>
+          <text>Todo</text>
+          <code></code>
+        </command>
+        <command>
+          <text>Molecula</text>
+          <code>LIST_MOL</code>
+        </command>
         <menu>
           <text>Representacion</text>
           <code>IGNORErepresentation</code>
           <page>
-            <command>
+            <menu>
               <text>Secundaria</text>
               <code>cartoon</code>
-            </command>
-            <command>
+              <page>
+                <command>
+                  <text>Todo</text>
+                  <code></code>
+                </command>
+                <command>
+                  <text>Molecula</text>
+                  <code>,LIST_MOL</code>
+                </command>
+              </page>
+            </menu>
+            <menu>
               <text>Lineas</text>
               <code>lines</code>
-            </command>
-            <command>
+              <page>
+                <command>
+                  <text>Todo</text>
+                  <code></code>
+                </command>
+                <command>
+                  <text>Molecula</text>
+                  <code>,LIST_MOL</code>
+                </command>
+              </page>
+            </menu>
+            <menu>
               <text>Esferas</text>
               <code>spheres</code>
-            </command>
-            <command>
+                <page>
+                <command>
+                  <text>Todo</text>
+                  <code></code>
+                </command>
+                <command>
+                  <text>Molecula</text>
+                  <code>,LIST_MOL</code>
+                </command>
+              </page>
+            </menu>
+            <menu>
               <text>Malla</text>
               <code>mesh</code>
-            </command>
-            <command>
+                <page>
+                <command>
+                  <text>Todo</text>
+                  <code></code>
+                </command>
+                <command>
+                  <text>Molecula</text>
+                  <code>,LIST_MOL</code>
+                </command>
+              </page>
+            </menu>
+            <menu>
               <text>Cinta</text>
               <code>ribbon</code>
-            </command>
+              <page>
+                <command>
+                  <text>Todo</text>
+                  <code></code>
+                </command>
+                <command>
+                  <text>Molecula</text>
+                  <code>,LIST_MOL</code>
+                </command>
+              </page>
+            </menu>
           </page>
           <page>
-            <command>
+            <menu>
               <text>Bastones</text>
               <code>sticks</code>
-            </command>
-            <command>
+            <page>
+                <command>
+                  <text>Todo</text>
+                  <code></code>
+                </command>
+                <command>
+                  <text>Molecula</text>
+                  <code>,LIST_MOL</code>
+                </command>
+              </page>
+            </menu>
+            <menu>
               <text>Puntos</text>
               <code>dots</code>
-            </command>
-            <command>
+              <page>
+                <command>
+                  <text>Todo</text>
+                  <code></code>
+                </command>
+                <command>
+                  <text>Molecula</text>
+                  <code>,LIST_MOL</code>
+                </command>
+              </page>
+            </menu>
+            <menu>
               <text>Superficie</text>
               <code>surface</code>
-            </command>
+              <page>
+                <command>
+                  <text>Todo</text>
+                  <code></code>
+                </command>
+                <command>
+                  <text>Molecula</text>
+                  <code>,LIST_MOL</code>
+                </command>
+              </page>
+            </menu>
           </page>
         </menu>
       </page>
