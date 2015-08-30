@@ -126,6 +126,14 @@
       <code>bg_color</code>
       <page>
         <command>
+          <text>Blanco</text>
+          <code>white</code>
+        </command>
+        <command>
+          <text>Negro</text>
+          <code>black</code>
+        </command>
+        <command>
           <text>Amarillo</text>
           <code>yellow</code>
         </command>
@@ -134,16 +142,18 @@
           <code>blue</code>
         </command>
         <command>
-          <text>Morado</text>
-          <code>purple</code>
-        </command>
-        <command>
           <text>Rojo</text>
           <code>red</code>
         </command>
+      </page>
+      <page>
         <command>
           <text>Verde</text>
           <code>green</code>
+        </command>
+        <command>
+          <text>Morado</text>
+          <code>purple</code>
         </command>
       </page>
     </menu>

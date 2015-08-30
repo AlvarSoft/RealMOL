@@ -16,7 +16,7 @@ from pymol.vfont import plain
 import ovrsdk #Utilizado para acceder a los datos de posición del Oculus
 import socket #Utilizado para recibir los comandos por parte del Kinect
 
-import re
+#import re
 
 UDP_IP = "127.0.0.1" #Dirección IP local
 IN_PORT = 5005 #Puerto por donde llegaran los comandos del Kinect
@@ -120,7 +120,8 @@ class RealMOL:
         #Se crea el árbol de comandos y se carga con los datos del XML
         self.commandTree = CommandNode(Types.Root, "", "")
         self.commandTree.create_tree(XMLFILE)
-        self.debug = debug;
+        self.menu1 = True
+        self.debug = debug
         #Valor de sensibilidad para el movimiento del OVR
         self.ovr_sensitivity = 80
         #Variable que controla la ejecución y finalización del programa
@@ -150,6 +151,8 @@ class RealMOL:
 
         #Variable que guarda la posición de la cámara antes de desplegar un menú
         self.backupView = ()    
+        #Variable que guarda el color de fonto antes de desplegar un menú
+        self.color = "black"
 
     """
     Función: rotate_screen
@@ -250,7 +253,10 @@ class RealMOL:
     """
     def __print_text(self,text):
         #Para evitar que el texto se imprima en un angulo difícil de leer reseteamos la cámara de PyMOL
-        pymol.cmd.reset()
+        if self.menu1:
+            pymol.cmd.reset()
+            if self.color != "black":
+                pymol.cmd.bg_color("black")
         #Creamos nuestro CGO
         cgo = []
         #Variable que nos ira dando la separación entre líneas
@@ -282,7 +288,8 @@ class RealMOL:
                 separation += LINESEPARATION
         #Cargamos el CGO y acercamos la cámara a el
         pymol.cmd.load_cgo(cgo, TEXTNAME)
-        pymol.cmd.zoom(TEXTNAME, 2.0)
+        if self.menu1:
+            pymol.cmd.zoom(TEXTNAME, 2.0)
 
     """
     Función: menu_titles
@@ -451,7 +458,9 @@ class RealMOL:
             self.backupView = pymol.cmd.get_view()
         #Caso contrario destruimos el último menú cargado
         else:
-            pymol.cmd.delete(TEXTNAME)
+           if self.menu1:
+               self.menu1 = False
+           pymol.cmd.delete(TEXTNAME)
         #Si el menú debe eliminarse entonces reestablecemos la cámara y la función termina    
         if menu == "clear":
             pymol.cmd.set_view(self.backupView)
@@ -578,14 +587,17 @@ class RealMOL:
             pymol.cmd.ray()
         #El comando viene limpio, se ejecuta en PyMOL
         else:
+            pymol.cmd.do(command)
+            self.menu1 = True
             if "select" in command:
-                if re.search("select \w+ ,resi \d+(\+\d+)*",command):
+                val = command.split(',')[0][7:]
+                if pymol.cmd.count_atoms(val):
                     self.sock.sendto("200".encode(),(UDP_IP,OUT_PORT))
-                    print("Enviado 200 a c#")
                 else:
                     self.sock.sendto("500".encode(),(UDP_IP,OUT_PORT))
-                    print("Enviado 500 a c#")
-            pymol.cmd.do(command)
+            elif "bg_color" in command:
+                self.color = command[9:]
+            pymol.cmd.bg_color(self.color)
         self.running = True
 
     """
