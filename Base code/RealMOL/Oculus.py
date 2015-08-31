@@ -16,7 +16,7 @@ from pymol.vfont import plain
 import ovrsdk #Utilizado para acceder a los datos de posición del Oculus
 import socket #Utilizado para recibir los comandos por parte del Kinect
 
-import re
+import unicodedata
 
 UDP_IP = "127.0.0.1" #Dirección IP local
 IN_PORT = 5005 #Puerto por donde llegaran los comandos del Kinect
@@ -123,6 +123,8 @@ class RealMOL:
         self.commandTree = CommandNode(Types.Root, "", "")
         self.commandTree.create_tree(XMLFILE)
         self.debug = debug;
+        #Variabe que nos indica si es la primera vez que se imprime el menu
+        self.fistmenu = True
         #Valor de sensibilidad para el movimiento del OVR
         self.ovr_sensitivity = 80
         #Variable que controla la ejecución y finalización del programa
@@ -151,7 +153,9 @@ class RealMOL:
         self.mollist = {}
 
         #Variable que guarda la posición de la cámara antes de desplegar un menú
-        self.backupView = ()    
+        self.backupView = ()
+        #Variable que guarda el color de fonto antes de desplegar un menú
+        self.color = "black"
 
     """
     Función: rotate_screen
@@ -251,13 +255,18 @@ class RealMOL:
     Salidas: Mensaje en pantalla 
     """
     def __print_text(self,text):
-        #Para evitar que el texto se imprima en un angulo difícil de leer reseteamos la cámara de PyMOL
-        pymol.cmd.reset()
+        #Verificamos si es la primera vez que se muestra el menu
+        if self.fistmenu:
+            #Si lo es, reseteamos la posición para mostarar correctamente el menú
+            pymol.cmd.reset()
+            #Se cambia el fondo negro para hacer mas placentera su visualización
+            pymol.cmd.bg_color("black");
         #Creamos nuestro CGO
         cgo = []
         #Variable que nos ira dando la separación entre líneas
         separation = 0
         #Cambiamos la ñ por la n para poder imprimir el caracter
+        #cleanText = unicode(unicodedata.normalize('NFKD', text).encode('ASCII', 'ignore'))
         cleanText = ""
         for char in text:
             if unicode(char) == u'ñ':
@@ -284,7 +293,8 @@ class RealMOL:
                 separation += LINESEPARATION
         #Cargamos el CGO y acercamos la cámara a el
         pymol.cmd.load_cgo(cgo, TEXTNAME)
-        pymol.cmd.zoom(TEXTNAME, 2.0)
+        if self.fistmenu:
+            pymol.cmd.zoom(TEXTNAME, 2.0)
 
     """
     Función: menu_titles
@@ -490,10 +500,13 @@ class RealMOL:
             self.backupView = pymol.cmd.get_view()
         #Caso contrario destruimos el último menú cargado
         else:
+            if self.fistmenu:
+                self.fistmenu = False
             pymol.cmd.delete(TEXTNAME)
         #Si el menú debe eliminarse entonces reestablecemos la cámara y la función termina    
         if menu == "clear":
             pymol.cmd.set_view(self.backupView)
+            pymol.cmd.bg_color(self.color)
             return
         #Si el menú debe mostrar las descripciones de las moléculas entonces lo manejamos con la función correspondiente y la función actual termina
         elif "SHOW_NAME" in menu:
@@ -623,14 +636,24 @@ class RealMOL:
             pymol.cmd.ray()
         #El comando viene limpio, se ejecuta en PyMOL
         else:
-            if "select" in command:
-                if re.search("select \w+ ,resi \d+(\+\d+)*",command):
-                    self.sock.sendto("200".encode(),(UDP_IP,OUT_PORT))
-                    print("Enviado 200 a c#")
-                else:
-                    self.sock.sendto("500".encode(),(UDP_IP,OUT_PORT))
-                    print("Enviado 500 a c#")
             pymol.cmd.do(command)
+            self.fistmenu = True
+            #Se verifica que el comando haya sido un select
+            if "select" in command:
+                #En caso de serlo se extrae el nombre de la selección
+                val = command.split(',')[0][7:]
+                #Se verifica que la selección halla tenido por lo menos un átomo seleccionado
+                if pymol.cmd.count_atoms(val):
+                    #De ser así informa a Kinect
+                    self.sock.sendto("200".encode(),(UDP_IP,OUT_PORT))
+                else:
+                    #Caso contario informa a kinect y libera el nombre de la selección
+                    self.sock.sendto("500".encode(),(UDP_IP,OUT_PORT))
+                    pymol.cmd.delete(val)
+            #Verifica que el comando sea un cambio de color
+            elif "bg_color" in command:
+                #De serlo guarda el color que se solicito
+                self.color = command[9:]
         self.running = True
 
     """
