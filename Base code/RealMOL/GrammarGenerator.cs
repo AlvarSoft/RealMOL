@@ -18,7 +18,7 @@ namespace RealMOL
         public static string[] numbers_sounds = new string[9999];
 
         public static string[] GEOMETRIC_COMMANDS = { "enfocar", "girar", "mover", "rotar" }; //Comandos de control geométrico
-        public static string[] MENU_COMMANDS = { "cancelar", "siguiente", "anterior" }; //Comandos para navegar por los menús
+        public static string[] MENU_COMMANDS = { "cancelar", "siguiente", "anterior", "atras" }; //Comandos para navegar por los menús
         public static string[] DICTATION_COMMANDS = { "borrar", "aceptar" }; //Comandos para controlar los dictados
         public static string[] CHARACTERS_SOUNDS = { "vocal a", "letra be", "letra ce", "letra de", "vocal e", "letra efe", "letra ge", "letra ache", "vocal i", "letra jota", "letra ka",
                                                        "letra ele", "letra eme", "letra ene", "vocal o", "letra pe", "letra ku", "letra ere", "letra ese", "letra te", "vocal u", "letra uve", 
