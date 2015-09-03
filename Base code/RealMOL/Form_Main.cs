@@ -81,7 +81,7 @@ namespace RealMOL
          * Fecha de Creación: 31/08/15
          * Fecha de Modificación: 31/08/15
          * Entradas: --
-         * Salidas: --
+         * Salidas: Menú actualizado en la pantalla del Oculus
          * Nota: Envia un comando a Pymol para imprimir el menu inicial
          */
         private void StartMainMenu()
@@ -893,24 +893,6 @@ namespace RealMOL
             {
                 QuitMenu(true);
             }
-            //Se comprueba si se quiere ir atras en los menús
-            else if (command == "atras")
-            {
-                if (newCommand.Split(' ').Length > 1)
-                {
-                    newCommand = newCommand.Substring(0, newCommand.LastIndexOf(' ')).Trim();
-                    HandleNormalCommands("");
-                }
-                else if (newCommand.Split(' ').Length == 1)
-                {
-                    newCommand = "";
-                    StartMainMenu();
-                }
-                else
-                {
-                    RejectSpeech();
-                }
-            }
             //Se comprueban el resto de los comandos de menú
             else
             {
@@ -922,7 +904,35 @@ namespace RealMOL
                 //Caso contrario se maneja el comando con la función correspondiente
                 else
                 {
-                    HandlePageCommands(command);
+                    //Se comprueba si se quiere ir atras en los menús
+                    if (command == "atras")
+                    {
+                        /* Se verifica que el comando ya posea mas de 1 palabra o dicho de otra forma
+                         * que estemos 2 niveles o más adentro que el menú principañ
+                         */
+                        if (newCommand.Split(' ').Length > 1)
+                        {
+                            //Si es así, se elimina el último comando y se manda imprimr el nuevo menu
+                            newCommand = newCommand.Substring(0, newCommand.LastIndexOf(' ')).Trim();
+                            HandleNormalCommands("");
+                        }
+                        //Se verifica que el comando sea de 1 palabra o estemos un menu abajo del pricipal
+                        else if (newCommand.Split(' ').Length == 1)
+                        {
+                            //Si es as así, se reinicializa los comandos y se imprime el menú principal
+                            newCommand = "";
+                            StartMainMenu();
+                        }
+                        //Si se esta en el menu principal se rechaza el comando
+                        else
+                        {
+                            RejectSpeech();
+                        }
+                    }
+                    else
+                    {
+                        HandlePageCommands(command);
+                    }
                 }
             }
         }
@@ -1398,8 +1408,7 @@ namespace RealMOL
             }
             else
             {
-                tempCommand = newCommand + " " + command;
-                tempCommand = tempCommand.Trim();
+                tempCommand = (newCommand + " " + command).Trim();
             }
             //Se obtiene el código del comando
             message = GenCodeCommand(tempCommand);
@@ -1491,8 +1500,7 @@ namespace RealMOL
                 }
                 else
                 {
-                    newCommand += " " + command;
-                    newCommand = newCommand.Trim();
+                    newCommand = (newCommand + " " + command).Trim();
                 }
                 //Se emite un sonido de espera de comando
                 using (SoundPlayer simpleSound = new SoundPlayer("ready.wav"))
@@ -1615,7 +1623,7 @@ namespace RealMOL
                     //Se hace una pausa para no detectar más de una vez el botón
                     Thread.Sleep(SLEEPTIME);
                 }
-                //Si el usuario presiona X en el menu, va a la pestaña anterior
+                //Si el usuario presiona B en el menu, va a la pestaña anterior
                 else if (controlState.Gamepad.Buttons.HasFlag(GamepadButtonFlags.B))
                 {
                     HandleMenuCommands("atras");

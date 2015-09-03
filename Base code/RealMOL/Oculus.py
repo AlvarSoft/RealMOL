@@ -124,7 +124,7 @@ class RealMOL:
         self.commandTree.create_tree(XMLFILE)
         self.debug = debug;
         #Variabe que nos indica si es la primera vez que se imprime el menu
-        self.fistmenu = True
+        self.firstmenu = True
         #Valor de sensibilidad para el movimiento del OVR
         self.ovr_sensitivity = 80
         #Variable que controla la ejecución y finalización del programa
@@ -256,7 +256,7 @@ class RealMOL:
     """
     def __print_text(self,text):
         #Verificamos si es la primera vez que se muestra el menu
-        if self.fistmenu:
+        if self.firstmenu:
             #Si lo es, reseteamos la posición para mostarar correctamente el menú
             pymol.cmd.reset()
             #Se cambia el fondo negro para hacer mas placentera su visualización
@@ -266,7 +266,6 @@ class RealMOL:
         #Variable que nos ira dando la separación entre líneas
         separation = 0
         #Cambiamos la ñ por la n para poder imprimir el caracter
-        #cleanText = unicode(unicodedata.normalize('NFKD', text).encode('ASCII', 'ignore'))
         cleanText = ""
         for char in text:
             if unicode(char) == u'ñ':
@@ -293,7 +292,7 @@ class RealMOL:
                 separation += LINESEPARATION
         #Cargamos el CGO y acercamos la cámara a el
         pymol.cmd.load_cgo(cgo, TEXTNAME)
-        if self.fistmenu:
+        if self.firstmenu:
             pymol.cmd.zoom(TEXTNAME, 2.0)
 
     """
@@ -500,8 +499,8 @@ class RealMOL:
             self.backupView = pymol.cmd.get_view()
         #Caso contrario destruimos el último menú cargado
         else:
-            if self.fistmenu:
-                self.fistmenu = False
+            if self.firstmenu:
+                self.firstmenu = False
             pymol.cmd.delete(TEXTNAME)
         #Si el menú debe eliminarse entonces reestablecemos la cámara y la función termina    
         if menu == "clear":
@@ -637,7 +636,7 @@ class RealMOL:
         #El comando viene limpio, se ejecuta en PyMOL
         else:
             pymol.cmd.do(command)
-            self.fistmenu = True
+            self.firstmenu = True
             #Se verifica que el comando haya sido un select
             if "select" in command:
                 #En caso de serlo se extrae el nombre de la selección
