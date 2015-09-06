@@ -74,28 +74,6 @@ namespace RealMOL
         private const int MAXLIST = 5; //Cantidad máxima de elementos que se muestran en una lista
 
         /*
-         * Función: StartMainMenu()
-         * Descripción: Función que manda a PyMOL la impresión del menú principal
-         * Autor: Christan Vargas
-         * Codificador: Jorge Pintor
-         * Fecha de Creación: 31/08/15
-         * Fecha de Modificación: 31/08/15
-         * Entradas: --
-         * Salidas: Menú actualizado en la pantalla del Oculus
-         * Nota: Envia un comando a Pymol para imprimir el menu inicial
-         */
-        private void StartMainMenu()
-        {
-            using (SoundPlayer simpleSound = new SoundPlayer("ready.wav"))
-            {
-                simpleSound.Play();
-            }
-            waiting = true;
-            sendBytes = Encoding.ASCII.GetBytes("menu " + commandTree.children.ElementAt(0).code + " " + menuPage.ToString());
-            udpClient.Send(sendBytes, sendBytes.Length);
-        }
-
-        /*
          * Función: GetKinectRecognizer
          * Descripción: Función que busca el reconocedor de voz Kinect con el paquete de idioma en español mexicano
          * Autor: Christian Vargas
@@ -293,16 +271,10 @@ namespace RealMOL
                 //Se comprueba que la entrada de comandos no este bloqueada
                 if (!blocked)
                 {
-                    //Si el comando es el inicial del árbol, entonces informamos al usuario que el programa está listo para recibir comandos de voz, establecemos la variable adecuada, enviamos un comando al programa en Python para solicitar el menú inicial en la página 1 y terminamos la función
+                    //Si el comando es el inicial del árbol, entonces mostramos el menú inicial
                     if (e.Result.Text == commandTree.children.ElementAt(0).text && !waiting)
                     {
-                        using (SoundPlayer simpleSound = new SoundPlayer("ready.wav"))
-                        {
-                            simpleSound.Play();
-                        }
-                        waiting = true;
-                        sendBytes = Encoding.ASCII.GetBytes("menu " + commandTree.children.ElementAt(0).code + " " + menuPage.ToString());
-                        udpClient.Send(sendBytes, sendBytes.Length);
+                        StartMainMenu();
                     }
                     //Si el comando es de movimiento geométrico, se establecen las variables correspondientes y se emite el sonido correspondiente
                     else if (GrammarGenerator.GEOMETRIC_COMMANDS.Contains(e.Result.Text))
@@ -542,6 +514,53 @@ namespace RealMOL
         }
 
         /*
+         * Función: StartMainMenu()
+         * Descripción: Función que manda a PyMOL la impresión del menú principal
+         * Autor: Christan Vargas
+         * Codificador: Jorge Pintor
+         * Fecha de Creación: 31/08/15
+         * Fecha de Modificación: 31/08/15
+         * Entradas: --
+         * Salidas: Menú actualizado en la pantalla del Oculus
+         * Nota: Envia un comando a Pymol para imprimir el menu inicial
+         */
+        private void StartMainMenu()
+        {
+            //Informamos al usuario que el programa está listo para recibir comandos de voz, establecemos la variable adecuada y enviamos un comando al programa en Python para solicitar el menú inicial en la página 1
+            using (SoundPlayer simpleSound = new SoundPlayer("ready.wav"))
+            {
+                simpleSound.Play();
+            }
+            waiting = true;
+            sendBytes = Encoding.ASCII.GetBytes("menu " + commandTree.children.ElementAt(0).code + " " + menuPage.ToString());
+            udpClient.Send(sendBytes, sendBytes.Length);
+        }
+
+        /*
+         * Función: ReinitializeMenuState
+         * Descripción: Función reinicializa los valores del estado del menú.
+         * Autor: Christian Vargas
+         * Fecha de creación: 06/09/15
+         * Fecha de modificación: --/--/--
+         * Entradas: --
+         * Salidas: Menú listo para navegar
+         */
+        private void ReinitializeMenuState()
+        {
+            molCode = "";
+            selName = "";
+            resISel = "";
+            menuPage = 1;
+            showingTitles = false;
+            hearingMol = false;
+            hearingSel = false;
+            hearingResI = false;
+            hearingFontSize = false;
+            displayingRayWarning = false;
+            displayingMolList = false;
+        }
+
+        /*
          * Función: QuitMenu
          * Descripción: Función que envía al programa en Python la solicitud de eliminar el menú
          * Autor: Christian Vargas
@@ -566,17 +585,7 @@ namespace RealMOL
             }
             //Se reinicializan las variables que participan en la generación de comandos y se envía el comando de eliminar el menú al programa en Python
             newCommand = "";
-            molCode = "";
-            selName = "";
-            resISel = "";
-            menuPage = 1;
-            showingTitles = false;
-            hearingMol = false;
-            hearingSel = false;
-            hearingResI = false;
-            hearingFontSize = false;
-            displayingRayWarning = false;
-            displayingMolList = false;
+            ReinitializeMenuState();
             sendBytes = Encoding.ASCII.GetBytes("menu clear");
             udpClient.Send(sendBytes, sendBytes.Length);
             waiting = false;
@@ -893,47 +902,35 @@ namespace RealMOL
             {
                 QuitMenu(true);
             }
+            //Se comprueba si se quiere ir atrás en los menús
+            else if (command == "atras")
+            {
+                //Se reinicializa el estado del menú 
+                ReinitializeMenuState();
+                //Se verifica que el comando ya posea más de 1 palabra o dicho de otra forma que estemos 2 niveles o más adentro que el menú principal
+                if (newCommand.Split(' ').Length > 1)
+                {
+                    //Si es así, se elimina el último comando y se manda a imprimir el nuevo menú
+                    newCommand = newCommand.Substring(0, newCommand.LastIndexOf(' ')).Trim();
+                    HandleNormalCommands("");
+                }
+                //Estamos en el menú principal o en un menú abajo del principal, se reinicializan los comandos y se imprime el menú principal
+                else
+                {
+                    //Si es as así, se reinicializan los comandos y se imprime el menú principal
+                    newCommand = "";
+                    StartMainMenu();
+                }
+            }
+            //Si el menú es uno de los menús especiales sin posibilidad de páginas se rechaza el comando
+            else if (InSpecialMenu() && !InListingMenu())
+            {
+                RejectSpeech();
+            }
             //Se comprueban el resto de los comandos de menú
             else
             {
-                //Si el menú es uno de los menús especiales sin posibilidad de páginas se rechaza el comando
-                if (InSpecialMenu() && !InListingMenu())
-                {
-                    RejectSpeech();
-                }
-                //Caso contrario se maneja el comando con la función correspondiente
-                else
-                {
-                    //Se comprueba si se quiere ir atras en los menús
-                    if (command == "atras")
-                    {
-                        /* Se verifica que el comando ya posea mas de 1 palabra o dicho de otra forma
-                         * que estemos 2 niveles o más adentro que el menú principañ
-                         */
-                        if (newCommand.Split(' ').Length > 1)
-                        {
-                            //Si es así, se elimina el último comando y se manda imprimr el nuevo menu
-                            newCommand = newCommand.Substring(0, newCommand.LastIndexOf(' ')).Trim();
-                            HandleNormalCommands("");
-                        }
-                        //Se verifica que el comando sea de 1 palabra o estemos un menu abajo del pricipal
-                        else if (newCommand.Split(' ').Length == 1)
-                        {
-                            //Si es as así, se reinicializa los comandos y se imprime el menú principal
-                            newCommand = "";
-                            StartMainMenu();
-                        }
-                        //Si se esta en el menu principal se rechaza el comando
-                        else
-                        {
-                            RejectSpeech();
-                        }
-                    }
-                    else
-                    {
-                        HandlePageCommands(command);
-                    }
-                }
+                HandlePageCommands(command);
             }
         }
 
@@ -1623,7 +1620,7 @@ namespace RealMOL
                     //Se hace una pausa para no detectar más de una vez el botón
                     Thread.Sleep(SLEEPTIME);
                 }
-                //Si el usuario presiona B en el menu, va a la pestaña anterior
+                //Si el usuario presiona B en el menu, lo manejamos como si dijera atras
                 else if (controlState.Gamepad.Buttons.HasFlag(GamepadButtonFlags.B))
                 {
                     HandleMenuCommands("atras");
