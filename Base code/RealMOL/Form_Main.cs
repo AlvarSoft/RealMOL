@@ -74,6 +74,28 @@ namespace RealMOL
         private const int MAXLIST = 5; //Cantidad máxima de elementos que se muestran en una lista
 
         /*
+         * Función: StartMainMenu()
+         * Descripción: Función que manda a PyMOL la impresión del menú principal
+         * Autor: Christan Vargas
+         * Codificador: Jorge Pintor
+         * Fecha de Creación: 31/08/15
+         * Fecha de Modificación: 31/08/15
+         * Entradas: --
+         * Salidas: Menú actualizado en la pantalla del Oculus
+         * Nota: Envia un comando a Pymol para imprimir el menu inicial
+         */
+        private void StartMainMenu()
+        {
+            using (SoundPlayer simpleSound = new SoundPlayer("ready.wav"))
+            {
+                simpleSound.Play();
+            }
+            waiting = true;
+            sendBytes = Encoding.ASCII.GetBytes("menu " + commandTree.children.ElementAt(0).code + " " + menuPage.ToString());
+            udpClient.Send(sendBytes, sendBytes.Length);
+        }
+
+        /*
          * Función: GetKinectRecognizer
          * Descripción: Función que busca el reconocedor de voz Kinect con el paquete de idioma en español mexicano
          * Autor: Christian Vargas
@@ -865,7 +887,7 @@ namespace RealMOL
          * Salidas: Menú actualizado en la pantalla del Oculus
          */
         private void HandleMenuCommands(string command)
-        {
+        {        
             //Se comprueba si el menú es cancelar, de ser así se elimina el menú
             if (command == "cancelar")
             {
@@ -882,7 +904,35 @@ namespace RealMOL
                 //Caso contrario se maneja el comando con la función correspondiente
                 else
                 {
-                    HandlePageCommands(command);
+                    //Se comprueba si se quiere ir atras en los menús
+                    if (command == "atras")
+                    {
+                        /* Se verifica que el comando ya posea mas de 1 palabra o dicho de otra forma
+                         * que estemos 2 niveles o más adentro que el menú principañ
+                         */
+                        if (newCommand.Split(' ').Length > 1)
+                        {
+                            //Si es así, se elimina el último comando y se manda imprimr el nuevo menu
+                            newCommand = newCommand.Substring(0, newCommand.LastIndexOf(' ')).Trim();
+                            HandleNormalCommands("");
+                        }
+                        //Se verifica que el comando sea de 1 palabra o estemos un menu abajo del pricipal
+                        else if (newCommand.Split(' ').Length == 1)
+                        {
+                            //Si es as así, se reinicializa los comandos y se imprime el menú principal
+                            newCommand = "";
+                            StartMainMenu();
+                        }
+                        //Si se esta en el menu principal se rechaza el comando
+                        else
+                        {
+                            RejectSpeech();
+                        }
+                    }
+                    else
+                    {
+                        HandlePageCommands(command);
+                    }
                 }
             }
         }
@@ -1358,7 +1408,7 @@ namespace RealMOL
             }
             else
             {
-                tempCommand = newCommand + " " + command;
+                tempCommand = (newCommand + " " + command).Trim();
             }
             //Se obtiene el código del comando
             message = GenCodeCommand(tempCommand);
@@ -1370,7 +1420,6 @@ namespace RealMOL
             }
             //Se comprueba si el comando requiere que se muestren los títulos de las moléculas, de ser así se establece la variable correspondiente
             if (message.Contains("SHOW_NAME"))
-
             {
                 showingTitles = true;
             }
@@ -1451,7 +1500,7 @@ namespace RealMOL
                 }
                 else
                 {
-                    newCommand += " " + command;
+                    newCommand = (newCommand + " " + command).Trim();
                 }
                 //Se emite un sonido de espera de comando
                 using (SoundPlayer simpleSound = new SoundPlayer("ready.wav"))
@@ -1567,10 +1616,17 @@ namespace RealMOL
                     //Se hace una pausa para no detectar más de una vez el botón
                     Thread.Sleep(SLEEPTIME);
                 }
-                //Si el usuario presiona el botón B, lo manejamos como si dijera borrar
-                else if (controlState.Gamepad.Buttons.HasFlag(GamepadButtonFlags.B))
+                //Si el usuario presiona el botón X, lo manejamos como si dijera borrar
+                else if (controlState.Gamepad.Buttons.HasFlag(GamepadButtonFlags.X))
                 {
                     HandleDictationCommands("borrar");
+                    //Se hace una pausa para no detectar más de una vez el botón
+                    Thread.Sleep(SLEEPTIME);
+                }
+                //Si el usuario presiona B en el menu, va a la pestaña anterior
+                else if (controlState.Gamepad.Buttons.HasFlag(GamepadButtonFlags.B))
+                {
+                    HandleMenuCommands("atras");
                     //Se hace una pausa para no detectar más de una vez el botón
                     Thread.Sleep(SLEEPTIME);
                 }
@@ -1602,13 +1658,7 @@ namespace RealMOL
                 //Informamos al usuario que el programa está listo para recibir comandos de voz, establecemos la variable adecuada y enviamos un comando al programa en Python para solicitar el menú inicial en la página 1
                 if (controlState.Gamepad.Buttons.HasFlag(GamepadButtonFlags.Start))
                 {
-                    using (SoundPlayer simpleSound = new SoundPlayer("ready.wav"))
-                    {
-                        simpleSound.Play();
-                    }
-                    waiting = true;
-                    sendBytes = Encoding.ASCII.GetBytes("menu " + commandTree.children.ElementAt(0).code + " " + menuPage.ToString());
-                    udpClient.Send(sendBytes, sendBytes.Length);
+                    StartMainMenu();
                     //Se hace una pausa para no detectar más de una vez el botón
                     Thread.Sleep(SLEEPTIME);
                 }
