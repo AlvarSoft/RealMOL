@@ -14,7 +14,7 @@ namespace RealMOL
 
         public static string UNLOCK_COMMAND = "continuar";
 
-        private static char[] CHARACTERS = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' }; //Letras del alfabeto y dígitos numéricos
+        private static char[] CHARACTERS = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' }; //Letras del alfabeto y dígitos numéricos
         public static string[] numbers_sounds = new string[9999];
 
         public static string[] GEOMETRIC_COMMANDS = { "enfocar", "girar", "mover", "rotar" }; //Comandos de control geométrico

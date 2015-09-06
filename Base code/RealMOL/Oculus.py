@@ -16,8 +16,6 @@ from pymol.vfont import plain
 import ovrsdk #Utilizado para acceder a los datos de posición del Oculus
 import socket #Utilizado para recibir los comandos por parte del Kinect
 
-import unicodedata
-
 UDP_IP = "127.0.0.1" #Dirección IP local
 IN_PORT = 5005 #Puerto por donde llegaran los comandos del Kinect
 OUT_PORT = 5006 #Puerto por donde saldrám los comandos a Kinect
@@ -123,7 +121,7 @@ class RealMOL:
         self.commandTree = CommandNode(Types.Root, "", "")
         self.commandTree.create_tree(XMLFILE)
         self.debug = debug;
-        #Variabe que nos indica si es la primera vez que se imprime el menu
+        #Variable que nos indica si es la primera vez que se imprime el menú
         self.firstmenu = True
         #Valor de sensibilidad para el movimiento del OVR
         self.ovr_sensitivity = 80
@@ -154,7 +152,7 @@ class RealMOL:
 
         #Variable que guarda la posición de la cámara antes de desplegar un menú
         self.backupView = ()
-        #Variable que guarda el color de fonto antes de desplegar un menú
+        #Variable que guarda el color de fondo antes de desplegar un menú
         self.color = "black"
 
     """
@@ -255,11 +253,11 @@ class RealMOL:
     Salidas: Mensaje en pantalla 
     """
     def __print_text(self,text):
-        #Verificamos si es la primera vez que se muestra el menu
+        #Verificamos si es la primera vez que se muestra el menú
         if self.firstmenu:
-            #Si lo es, reseteamos la posición para mostarar correctamente el menú
+            #Si lo es, reseteamos la posición para mostrar correctamente el menú
             pymol.cmd.reset()
-            #Se cambia el fondo negro para hacer mas placentera su visualización
+            #Se cambia el fondo a negro para hacer más placentera su visualización
             pymol.cmd.bg_color("black");
         #Creamos nuestro CGO
         cgo = []
@@ -292,8 +290,7 @@ class RealMOL:
                 separation += LINESEPARATION
         #Cargamos el CGO y acercamos la cámara a el
         pymol.cmd.load_cgo(cgo, TEXTNAME)
-        if self.firstmenu:
-            pymol.cmd.zoom(TEXTNAME, 2.0)
+        pymol.cmd.zoom(TEXTNAME, 2.0)
 
     """
     Función: menu_titles
@@ -494,15 +491,15 @@ class RealMOL:
     """
     def __handle_menu(self, command_size=5):
         menu = self.data[command_size:]
-        #Si no hay un menú cargado entonces guardamos la posición de la cámara
+        #Si no hay un menú cargado entonces guardamos la posición de la cámara y establecemos que es el primer menú
         if not TEXTNAME in pymol.cmd.get_names("objects"):
             self.backupView = pymol.cmd.get_view()
-        #Caso contrario destruimos el último menú cargado
+            self.firstmenu = True
+        #Caso contrario destruimos el último menú cargado y establecemos que no es el primer menú
         else:
-            if self.firstmenu:
-                self.firstmenu = False
+            self.firstmenu = False
             pymol.cmd.delete(TEXTNAME)
-        #Si el menú debe eliminarse entonces reestablecemos la cámara y la función termina    
+        #Si el menú debe eliminarse entonces reestablecemos la cámara y el color de fondo, y la función termina    
         if menu == "clear":
             pymol.cmd.set_view(self.backupView)
             pymol.cmd.bg_color(self.color)
@@ -585,8 +582,8 @@ class RealMOL:
             self.__handle_menu()
         #Se comprueba si el usuario desea descargar una molécula 
         elif "fetch" in command:
-            #Se le envía a PyMOL el nombre de la molécula a ser descargada (enviando el comando a partir del sexto carácter)
-            pymol.cmd.fetch(self.data[6:])
+            #Se ejecuta el comando 
+            pymol.cmd.do(command)
             #Comprobamos que la molécula no se encontrara ya en la lista de moléculas cargadas, de ser así terminamos la función regresando verdadero
             if self.data[6:] in self.mollist:
                 self.running = True
@@ -629,30 +626,35 @@ class RealMOL:
             else:
                 #Se informa al programa en C# que no se encontró la molécula
                 self.sock.sendto("500".encode(), (UDP_IP, OUT_PORT));
-        #Si el usuario solicito un ray, entonces bloqueamos el uso del movimiento
+        #Se verifica si el comando es un select        
+        elif "select" in command:
+            #Se ejecuta el comando 
+            pymol.cmd.do(command)
+            #Se extrae el nombre de la selección
+            sel = command.split(',')[0][7:]
+            #Se verifica que la selección haya tenido por lo menos un átomo seleccionado, de ser así informa al programa en c#
+            print command       
+            if pymol.cmd.count_atoms(sel) > 0:
+                self.sock.sendto("200".encode(),(UDP_IP,OUT_PORT))
+            #Caso contario informa al programa en c# y se libera el nombre de la selección
+            else:
+                self.sock.sendto("500".encode(),(UDP_IP,OUT_PORT))
+                pymol.cmd.delete(sel)
+        #Se verifica si el comando es un ray
         elif command == "ray":
+            #Se ejecuta el comando                        
+            pymol.cmd.do(command)
+            #bloqueamos el uso del movimiento
             self.moveBlocked = True
-            pymol.cmd.ray()
+        #Se verifica si el comando es un cambio de color
+        elif "bg_color" in command:
+            #Se ejecuta el comando                        
+            pymol.cmd.do(command)
+            #Se guarda el nombre del color solicitado
+            self.color = command[9:]
         #El comando viene limpio, se ejecuta en PyMOL
         else:
             pymol.cmd.do(command)
-            self.firstmenu = True
-            #Se verifica que el comando haya sido un select
-            if "select" in command:
-                #En caso de serlo se extrae el nombre de la selección
-                val = command.split(',')[0][7:]
-                #Se verifica que la selección halla tenido por lo menos un átomo seleccionado
-                if pymol.cmd.count_atoms(val):
-                    #De ser así informa a Kinect
-                    self.sock.sendto("200".encode(),(UDP_IP,OUT_PORT))
-                else:
-                    #Caso contario informa a kinect y libera el nombre de la selección
-                    self.sock.sendto("500".encode(),(UDP_IP,OUT_PORT))
-                    pymol.cmd.delete(val)
-            #Verifica que el comando sea un cambio de color
-            elif "bg_color" in command:
-                #De serlo guarda el color que se solicito
-                self.color = command[9:]
         self.running = True
 
     """
