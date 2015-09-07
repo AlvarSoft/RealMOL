@@ -7,10 +7,20 @@
       <text>Descargar</text>
       <code>fetch HEAR_MOL</code>
     </command>
-    <command>
-      <text>Nombrar</text>
-      <code>SHOW_NAME</code>
-    </command>
+    <menu>
+      <text>Eliminar</text>
+      <code>delete</code>
+      <page>
+        <command>
+          <text>Molecula</text>
+          <code>LIST_MOL</code>
+        </command>
+        <command>
+          <text>Seleccion</text>
+          <code>LIST_SEL</code>
+        </command>
+      </page>
+    </menu>
     <menu>
       <text>Mostrar</text>
       <code>show</code>
@@ -22,6 +32,10 @@
         <command>
           <text>Molecula</text>
           <code>LIST_MOL</code>
+        </command>
+        <command>
+          <text>Seleccion</text>
+          <code>LIST_SEL</code>
         </command>
         <menu>
           <text>Representacion</text>
@@ -39,6 +53,10 @@
                   <text>Molecula</text>
                   <code>,LIST_MOL</code>
                 </command>
+                <command>
+                  <text>Seleccion</text>
+                  <code>,LIST_SEL</code>
+                </command>
               </page>
             </menu>
             <menu>
@@ -52,6 +70,10 @@
                 <command>
                   <text>Molecula</text>
                   <code>,LIST_MOL</code>
+                </command>
+                <command>
+                  <text>Seleccion</text>
+                  <code>,LIST_SEL</code>
                 </command>
               </page>
             </menu>
@@ -67,6 +89,10 @@
                   <text>Molecula</text>
                   <code>,LIST_MOL</code>
                 </command>
+                <command>
+                  <text>Seleccion</text>
+                  <code>,LIST_SEL</code>
+                </command>
               </page>
             </menu>
             <menu>
@@ -80,6 +106,10 @@
                 <command>
                   <text>Molecula</text>
                   <code>,LIST_MOL</code>
+                </command>
+                <command>
+                  <text>Seleccion</text>
+                  <code>,LIST_SEL</code>
                 </command>
               </page>
             </menu>
@@ -95,6 +125,10 @@
                   <text>Molecula</text>
                   <code>,LIST_MOL</code>
                 </command>
+                <command>
+                  <text>Seleccion</text>
+                  <code>,LIST_SEL</code>
+                </command>
               </page>
             </menu>
           </page>
@@ -102,7 +136,7 @@
             <menu>
               <text>Bastones</text>
               <code>sticks</code>
-            <page>
+              <page>
                 <command>
                   <text>Todo</text>
                   <code></code>
@@ -110,6 +144,10 @@
                 <command>
                   <text>Molecula</text>
                   <code>,LIST_MOL</code>
+                </command>
+                <command>
+                  <text>Seleccion</text>
+                  <code>,LIST_SEL</code>
                 </command>
               </page>
             </menu>
@@ -125,6 +163,10 @@
                   <text>Molecula</text>
                   <code>,LIST_MOL</code>
                 </command>
+                <command>
+                  <text>Seleccion</text>
+                  <code>,LIST_SEL</code>
+                </command>
               </page>
             </menu>
             <menu>
@@ -138,6 +180,10 @@
                 <command>
                   <text>Molecula</text>
                   <code>,LIST_MOL</code>
+                </command>
+                <command>
+                  <text>Seleccion</text>
+                  <code>,LIST_SEL</code>
                 </command>
               </page>
             </menu>
@@ -157,6 +203,10 @@
           <text>Molecula</text>
           <code>LIST_MOL</code>
         </command>
+        <command>
+          <text>Seleccion</text>
+          <code>LIST_SEL</code>
+        </command>
         <menu>
           <text>Representacion</text>
           <code>IGNORErepresentation</code>
@@ -173,6 +223,10 @@
                   <text>Molecula</text>
                   <code>,LIST_MOL</code>
                 </command>
+                <command>
+                  <text>Seleccion</text>
+                  <code>,LIST_SEL</code>
+                </command>
               </page>
             </menu>
             <menu>
@@ -187,12 +241,16 @@
                   <text>Molecula</text>
                   <code>,LIST_MOL</code>
                 </command>
+                <command>
+                  <text>Seleccion</text>
+                  <code>,LIST_SEL</code>
+                </command>
               </page>
             </menu>
             <menu>
               <text>Esferas</text>
               <code>spheres</code>
-                <page>
+              <page>
                 <command>
                   <text>Todo</text>
                   <code></code>
@@ -200,13 +258,17 @@
                 <command>
                   <text>Molecula</text>
                   <code>,LIST_MOL</code>
+                </command>
+                <command>
+                  <text>Seleccion</text>
+                  <code>,LIST_SEL</code>
                 </command>
               </page>
             </menu>
             <menu>
               <text>Malla</text>
               <code>mesh</code>
-                <page>
+              <page>
                 <command>
                   <text>Todo</text>
                   <code></code>
@@ -214,6 +276,10 @@
                 <command>
                   <text>Molecula</text>
                   <code>,LIST_MOL</code>
+                </command>
+                <command>
+                  <text>Seleccion</text>
+                  <code>,LIST_SEL</code>
                 </command>
               </page>
             </menu>
@@ -229,6 +295,10 @@
                   <text>Molecula</text>
                   <code>,LIST_MOL</code>
                 </command>
+                <command>
+                  <text>Seleccion</text>
+                  <code>,LIST_SEL</code>
+                </command>
               </page>
             </menu>
           </page>
@@ -236,7 +306,7 @@
             <menu>
               <text>Bastones</text>
               <code>sticks</code>
-            <page>
+              <page>
                 <command>
                   <text>Todo</text>
                   <code></code>
@@ -244,6 +314,10 @@
                 <command>
                   <text>Molecula</text>
                   <code>,LIST_MOL</code>
+                </command>
+                <command>
+                  <text>Seleccion</text>
+                  <code>,LIST_SEL</code>
                 </command>
               </page>
             </menu>
@@ -259,6 +333,10 @@
                   <text>Molecula</text>
                   <code>,LIST_MOL</code>
                 </command>
+                <command>
+                  <text>Seleccion</text>
+                  <code>,LIST_SEL</code>
+                </command>
               </page>
             </menu>
             <menu>
@@ -272,6 +350,10 @@
                 <command>
                   <text>Molecula</text>
                   <code>,LIST_MOL</code>
+                </command>
+                <command>
+                  <text>Seleccion</text>
+                  <code>,LIST_SEL</code>
                 </command>
               </page>
             </menu>
@@ -297,42 +379,6 @@
     </menu>
   </page>
   <page>
-    <menu>
-      <text>Fondo</text>
-      <code>bg_color</code>
-      <page>
-        <command>
-          <text>Blanco</text>
-          <code>white</code>
-        </command>
-        <command>
-          <text>Negro</text>
-          <code>black</code>
-        </command>
-        <command>
-          <text>Amarillo</text>
-          <code>yellow</code>
-        </command>
-        <command>
-          <text>Azul</text>
-          <code>blue</code>
-        </command>
-        <command>
-          <text>Rojo</text>
-          <code>red</code>
-        </command>
-      </page>
-      <page>
-        <command>
-          <text>Verde</text>
-          <code>green</code>
-        </command>
-        <command>
-          <text>Morado</text>
-          <code>purple</code>
-        </command>
-      </page>
-    </menu>
     <menu>
       <text>Configuracion</text>
       <code>set</code>
@@ -838,6 +884,14 @@
       </page>
     </menu>
     <command>
+      <text>Renderizar</text>
+      <code>PREPARE_RAY</code>
+    </command>
+    <command>
+      <text>Nombrar</text>
+      <code>SHOW_NAME</code>
+    </command>
+    <command>
       <text>Centrar</text>
       <code>center</code>
     </command>
@@ -845,12 +899,44 @@
       <text>Restablecer</text>
       <code>reset</code>
     </command>
-    <command>
-      <text>Renderizar</text>
-      <code>PREPARE_RAY</code>
-    </command>
   </page>
   <page>
+    <menu>
+      <text>Fondo</text>
+      <code>bg_color</code>
+      <page>
+        <command>
+          <text>Blanco</text>
+          <code>white</code>
+        </command>
+        <command>
+          <text>Negro</text>
+          <code>black</code>
+        </command>
+        <command>
+          <text>Amarillo</text>
+          <code>yellow</code>
+        </command>
+        <command>
+          <text>Azul</text>
+          <code>blue</code>
+        </command>
+        <command>
+          <text>Rojo</text>
+          <code>red</code>
+        </command>
+      </page>
+      <page>
+        <command>
+          <text>Verde</text>
+          <code>green</code>
+        </command>
+        <command>
+          <text>Morado</text>
+          <code>purple</code>
+        </command>
+      </page>
+    </menu>
     <command>
       <text>Salir</text>
       <code>QUIT</code>
