@@ -52,10 +52,11 @@ namespace RealMOL
         private bool hearingFontSize = false; //Variable que permite saber si actualmente se está escuchando el tamaño de una fuente
         private bool displayingRayWarning = false; //Variable que permite saber si actualmente se está mostrando una advertencia de ray
         private bool displayingMolList = false; //Variable que permite saber si actualmente se está mostrando la lista de moléculas
+        private bool displayingSelList = false; //Variable que permite saber si actualmente se está mostrando la lista de selecciones
         private bool blocked = false; //Variable que indica si la entrada de comandos se encuentra actualmente bloqueada
 
         private List<string> downloadedMol; //Arreglo donde se guardan las moléculas descargadas
-        private List<string> selectedMol; //Arrgelo donde se guardan las moléculas seleccionadas
+        private List<string> selectedList; //Arrgelo donde se guardan las selecciones
 
         private Controller xboxControl; //Control de Xbox 360
         private uint xboxControlSensitivity = 3; //Valor de sensibilidad para el control de Xbox 360
@@ -558,6 +559,7 @@ namespace RealMOL
             hearingFontSize = false;
             displayingRayWarning = false;
             displayingMolList = false;
+            displayingSelList = false;
         }
 
         /*
@@ -606,6 +608,11 @@ namespace RealMOL
             if (displayingMolList)
             {
                 return (int)Math.Ceiling(downloadedMol.Count() / (float)MAXLIST);
+            }
+            else if (displayingSelList)
+            {
+
+                return (int)Math.Ceiling(selectedList.Count() / (float)MAXLIST);
             }
             //Caso contrario, buscamos la cantidad de páginas para un menú del árbol de comandos
             else
@@ -737,7 +744,7 @@ namespace RealMOL
          */
         private bool InSpecialMenu()
         {
-            return (showingTitles || hearingMol || hearingSel || hearingResI || hearingFontSize || displayingRayWarning || displayingMolList);
+            return (showingTitles || hearingMol || hearingSel || hearingResI || hearingFontSize || displayingRayWarning || displayingMolList || displayingSelList);
         }
 
         /*
@@ -751,7 +758,7 @@ namespace RealMOL
          */
         private bool InListingMenu()
         {
-            return displayingMolList;
+            return (displayingMolList || displayingSelList);
         }
 
         /*
@@ -1137,7 +1144,7 @@ namespace RealMOL
                     if (resISel != "")
                     {
                         message = message.Replace("IGNOREres", selName);
-                        message = message.Replace("HEAR_SEL_RESI", resISel);
+                        message = message.Replace("HEAR_SEL_RESI", " " + resISel);
                         tempname = selName;
                         QuitMenu(true);
                         sendBytes = Encoding.ASCII.GetBytes(message);
@@ -1145,7 +1152,8 @@ namespace RealMOL
                         recvBytes = udpServer.Receive(ref endPoint);
                         if (Encoding.ASCII.GetString(recvBytes).ToString() == "200")
                         {
-                            selectedMol.Add(tempname);
+                            selectedList.Add(tempname);
+                            selectedList.Sort();
                         }
                     }
                     //Caso contrario se rechaza el comando 
@@ -1279,8 +1287,46 @@ namespace RealMOL
                 //Se comprueba si el número es válido, de ser así se forma el comando final, se elimina el menú y se envía el comando
                 if (((menuPage - 1) * MAXLIST) + int.Parse(character.ToString()) <= downloadedMol.Count)
                 {
-                    message = message.Replace("IGNORErepresentation", "");
-                    message = message.Replace("LIST_MOL", "(" + downloadedMol[((menuPage - 1) * MAXLIST) + int.Parse(character.ToString()) - 1] + ")");
+                    //Comprobamos si el listado fue invocado para manejar un comando de ocultar/mostrar, de ser así se prepara el comando acorde a la necesidad
+                    if (message.StartsWith("hide") || message.StartsWith("show"))
+                    {
+                        message = message.Replace("IGNORErepresentation", "");
+                        message = message.Replace("LIST_MOL", "(\"" + downloadedMol[((menuPage - 1) * MAXLIST) + int.Parse(character.ToString()) - 1] + "\")");
+                    }
+                    //El listado fue invocado para manejar un comando de eliminar, se prepara el comando acorde a la necesidad y se elimina la molécula de la lista
+                    else
+                    {
+                        message = message.Replace("LIST_MOL", downloadedMol[((menuPage - 1) * MAXLIST) + int.Parse(character.ToString()) - 1].ToLower());
+                        downloadedMol.RemoveAt(((menuPage - 1) * MAXLIST) + int.Parse(character.ToString()) - 1);
+                    }
+                    QuitMenu(true);
+                    sendBytes = Encoding.ASCII.GetBytes(message);
+                    udpClient.Send(sendBytes, sendBytes.Length);
+                }
+                //Caso contrario se rechaza el comando 
+                else
+                {
+                    RejectSpeech();
+                }
+            }
+            //Se comprueba si actualmente se está mostrando una lista de selecciones
+            else if (displayingSelList)
+            {
+                //Se comprueba si el número es válido, de ser así se forma el comando final, se elimina el menú y se envía el comando
+                if (((menuPage - 1) * MAXLIST) + int.Parse(character.ToString()) <= selectedList.Count)
+                {
+                    //Comprobamos si el listado fue invocado para manejar un comando de ocultar/mostrar, de ser así se prepara el comando acorde a la necesidad
+                    if (message.StartsWith("hide") || message.StartsWith("show"))
+                    {
+                        message = message.Replace("IGNORErepresentation", "");
+                        message = message.Replace("LIST_SEL", "(\"" + selectedList[((menuPage - 1) * MAXLIST) + int.Parse(character.ToString()) - 1] + "\")");
+                    }
+                    //El listado fue invocado para manejar un comando de eliminar, se prepara el comando acorde a la necesidad y se elimina la selección de la lista
+                    else
+                    {
+                        message = message.Replace("LIST_SEL", selectedList[((menuPage - 1) * MAXLIST) + int.Parse(character.ToString()) - 1].ToLower());
+                        selectedList.RemoveAt(((menuPage - 1) * MAXLIST) + int.Parse(character.ToString()) - 1);
+                    }
                     QuitMenu(true);
                     sendBytes = Encoding.ASCII.GetBytes(message);
                     udpClient.Send(sendBytes, sendBytes.Length);
@@ -1334,8 +1380,8 @@ namespace RealMOL
                 Console.WriteLine("Un número inválido no se detectó antes, invalidado en HandleNumberCommands al obtener el número del sonido, comando:" + newCommand);
                 return;
             }
-            //Se comprueba si actualmente se están escuchando los enteros de una selección, se añade el número a la selección, se emite un sonido de espera de comando y se envía el comando al programa en Python
-            if (hearingResI)
+            //Se comprueba si actualmente se están escuchando los enteros de una selección y si ya se terminó de escuchar el nombre de la selección, de ser así se añade el número a la selección, se emite un sonido de espera de comando y se envía el comando al programa en Python
+            if (hearingResI && !hearingSel)
             {
                 if (resISel == "")
                 {
@@ -1446,6 +1492,11 @@ namespace RealMOL
             {
                 displayingMolList = true;
             }
+            //Se comprueba si el comando requiere mostrar la lista de selecciones, de ser así se establecen las variables correspondientes
+            else if (message.Contains("LIST_SEL"))
+            {
+                displayingSelList = true;
+            }
             //Se comprueba si el comando requiere que se finalice la ejecución del el programa, de ser así se para el reconocimiento de voz, la actualización del control y se permite la entrada de datos en la ventana del programa
             else if (message.Contains("QUIT"))
             {
@@ -1536,6 +1587,7 @@ namespace RealMOL
             {
                 HandleCharacterCommands(command);
             }
+            //Se comprueba si el comando es numérico y se maneja con la función correspondiente
             else if (GrammarGenerator.numbers_sounds.Contains(command))
             {
                 HandleNumberCommands(command);
@@ -1737,7 +1789,7 @@ namespace RealMOL
             commandTree.CreateTree("commands.xml");
             //Se inicializan las listas
             downloadedMol = new List<string>();
-            selectedMol = new List<string>();
+            selectedList = new List<string>();
             //Se cargan los dispositivos y se inicializan los clientes y servidores UDP
             LoadDevices();
             udpClient = new UdpClient(IP, OUT_PORT);

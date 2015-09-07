@@ -307,7 +307,7 @@ class RealMOL:
         #Se comprueba si no hay moléculas cargadas, de ser así se le informa al usuario en el texto del menú
         if len(self.mollist.items()) == 0:
             menuText += "No hay moleculas\n"
-            menuText += "\n \n   Aceptar\n<-- Atras"
+            menuText += "\n \n   Aceptar"
         #Caso contrario, se guarda el nombre de la molécula junto con su descripción en el texto del menú    
         else:
             for k, v in self.mollist.items():
@@ -479,6 +479,44 @@ class RealMOL:
                 menuText += "\n \n             Cancelar"        
         #Se imprime el menú         
         self.__print_text(menuText)
+        
+        """
+    Función: menu_list_sel
+    Descripción: Descripción: Función que imprime la lista de selecciones para elegir
+    Autor: Christian Vargas
+    Fecha de creación: 06/09/15
+    Fecha de modificación: --/--/--
+    Entradas: page (int, la página actual)
+    Salidas: Mensaje en pantalla
+    """
+    def __menu_list_sel(self, page):
+        sel_list = pymol.cmd.get_names("selections")
+        #Se comprueba si no hay selecciones cargadas, de ser así se le informa al usuario en el texto del menú
+        if len(sel_list) == 0:
+            menuText = "No hay selecciones"
+            menuText += "\n \n   Cancelar"
+        #Caso contrario se enumeran las selecciones
+        else:  
+            #Se carga el menú con su texto inicial
+            menuText = "Mencione el numero de la seleccion\n \n"
+            #Se obtiene el punto de partida para hacer el listado de selecciones
+            start = (page-1)*MAXLIST
+            #Se obtiene el punto de partida para hacer el listado de selecciones 
+            if len(sel_list[start:]) < MAXLIST:
+                end = len(sel_list)
+            else:
+                end = start+MAXLIST
+            #Se itera sobre las selecciones a listar, y se van añadiendo al texto del menú con su número correspondiente
+            for i in range (start, end):
+                 menuText += str(i-start+1) + ".- " + sorted(sel_list)[i] + "\n"
+            #Se comprueba si son necesarias más de 1 página para listar todas las selecciones, de ser así se imprime el pie de menú correspondiente
+            if len(sel_list) > MAXLIST:
+                menuText += "\n \n <- Anterior Cancelar Siguiente ->"
+            #Caso contrario, solo se imprime la opción de cancelar
+            else:
+                menuText += "\n \n             Cancelar"        
+        #Se imprime el menú         
+        self.__print_text(menuText)
 
     """
     Función: handle_menu
@@ -534,6 +572,10 @@ class RealMOL:
         elif "LIST_MOL" in menu:
             self.__menu_list_mol(int(menu.rsplit(' ', 1)[1]))
             return
+        #Si estamos mostrando la lista de selecciones, entonces manejamos el menú con la función correspondiente y la función actual termina
+        elif "LIST_SEL" in menu:
+            self.__menu_list_sel(int(menu.rsplit(' ', 1)[1]))
+            return
         #Se crea la variable que guardara el texto del menú
         menuText = ""
         #Se obtiene el primer menú del árbol de comandos    
@@ -584,12 +626,11 @@ class RealMOL:
         elif "fetch" in command:
             #Se ejecuta el comando 
             pymol.cmd.do(command)
-            #Comprobamos que la molécula no se encontrara ya en la lista de moléculas cargadas, de ser así terminamos la función regresando verdadero
+            #Comprobamos que la molécula no se encontrara ya en la lista de moléculas cargadas, de ser así se informa al programa en C# que no se cargue la molécula
             if self.data[6:] in self.mollist:
-                self.running = True
-                return
+                self.sock.sendto("500".encode(), (UDP_IP, OUT_PORT));
             #Para comprobar que la molécula era válida buscamos el archivo pdb descargado
-            if (os.path.exists(self.data[6:] + ".pdb")):
+            elif (os.path.exists(self.data[6:] + ".pdb")):
                 #Se informa al programa en C# que se encontró la molécula
                 self.sock.sendto("200".encode(), (UDP_IP, OUT_PORT))
                 #Se abre el archivo para leer y buscar el titulo
@@ -628,30 +669,43 @@ class RealMOL:
                 self.sock.sendto("500".encode(), (UDP_IP, OUT_PORT));
         #Se verifica si el comando es un select        
         elif "select" in command:
-            #Se ejecuta el comando 
-            pymol.cmd.do(command)
             #Se extrae el nombre de la selección
-            sel = command.split(',')[0][7:]
-            #Se verifica que la selección haya tenido por lo menos un átomo seleccionado, de ser así informa al programa en c#
-            print command       
-            if pymol.cmd.count_atoms(sel) > 0:
-                self.sock.sendto("200".encode(),(UDP_IP,OUT_PORT))
-            #Caso contario informa al programa en c# y se libera el nombre de la selección
+            sel = command.split(' ')[1]
+            #Se comprueba si la selección ya existía
+            if sel in pymol.cmd.get_names("selections"):
+                #Se informa al programa en c# que no debe guardar el nombre de la selección
+                self.sock.sendto("500".encode(), (UDP_IP, OUT_PORT))
+                #Se ejecuta el comando 
+                pymol.cmd.do(command)
+            #La selección no existia
             else:
-                self.sock.sendto("500".encode(),(UDP_IP,OUT_PORT))
-                pymol.cmd.delete(sel)
-        #Se verifica si el comando es un ray
-        elif command == "ray":
+                #Se ejecuta el comando 
+                pymol.cmd.do(command)
+                #Se verifica que la selección haya tenido por lo menos un átomo seleccionado, de ser así informa al programa en c#
+                if pymol.cmd.count_atoms("\"" + sel + "\"") > 0:
+                    self.sock.sendto("200".encode(), (UDP_IP, OUT_PORT))
+                #Caso contario informa al programa en c# y se libera el nombre de la selección                
+                else:
+                    self.sock.sendto("500".encode(), (UDP_IP, OUT_PORT))
+                    pymol.cmd.delete(sel)                
+        #Se verifica si el comando es un delete
+        elif "delete" in command:
             #Se ejecuta el comando                        
             pymol.cmd.do(command)
-            #bloqueamos el uso del movimiento
-            self.moveBlocked = True
+            #Eliminamos la molécula de la lista de moléculas (aunque podría ser una selección, en cuyo caso no existiría la clave y no se arrojaría un error)
+            self.mollist.pop(command.split(' ')[1].upper(), None)
         #Se verifica si el comando es un cambio de color
         elif "bg_color" in command:
             #Se ejecuta el comando                        
             pymol.cmd.do(command)
             #Se guarda el nombre del color solicitado
             self.color = command[9:]
+        #Se verifica si el comando es un ray
+        elif command == "ray":
+            #Se ejecuta el comando                        
+            pymol.cmd.do(command)
+            #Bloqueamos el uso del movimiento
+            self.moveBlocked = True
         #El comando viene limpio, se ejecuta en PyMOL
         else:
             pymol.cmd.do(command)
