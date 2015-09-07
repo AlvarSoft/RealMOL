@@ -1144,7 +1144,7 @@ namespace RealMOL
                     if (resISel != "")
                     {
                         message = message.Replace("IGNOREres", selName);
-                        message = message.Replace("HEAR_SEL_RESI", " " + resISel);
+                        message = message.Replace("HEAR_SEL_RESI", resISel);
                         tempname = selName;
                         QuitMenu(true);
                         sendBytes = Encoding.ASCII.GetBytes(message);
