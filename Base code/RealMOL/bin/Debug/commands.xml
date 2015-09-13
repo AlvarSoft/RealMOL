@@ -373,6 +373,10 @@
               <text>Enteros</text>
               <code>,resi HEAR_SEL_RESI</code>
             </command>
+            <command>
+              <text>Rango</text>
+              <code>,resi HEAR_SEL_RESRANGE</code>
+            </command>
           </page>
         </menu>
       </page>

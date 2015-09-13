@@ -369,6 +369,34 @@ class RealMOL:
             menuText += "\n \n \nBorrar  Cancelar"
         #Se imprime el menú
         self.__print_text(menuText)
+        
+    """
+    Función: menu_hresrange
+    Descripción: Función que imprime la pantalla de dictado del rango de los residuos
+    Autor: Christian Vargas
+    Fecha de creación: 13/09/15
+    Fecha de modificación: --/--/--
+    Entradas: res (str, el rango que hasta ahora se han dictado)
+    Salidas: Mensaje en pantalla 
+    """
+    def __menu_hresrange(self, res):
+        #Se carga el menú con su texto inicial
+        menuText = "Dicte el rango de los residuos\n \n"
+        #Se comprueba que se haya dictado al menos un número 
+        if not res.startswith("HEAR_RESRANGE"):
+            #Se imprimen los números
+            menuText += res
+            #Si el rango está completo entonces se imprime la opción de aceptar
+            if '-' in res:
+                menuText += "\n \nBorrar  Cancelar  Aceptar"
+            #Caso contrario se imprimen solo las opciones básicas        
+            else:
+                menuText += "\n \nBorrar  Cancelar"
+        #Caso contrario se imprimen solo las opciones básicas
+        else:
+            menuText += "\n \n \nBorrar  Cancelar"
+        #Se imprime el menú
+        self.__print_text(menuText)
     
     """
     Función: menu_hsel
@@ -555,6 +583,9 @@ class RealMOL:
             #Si estamos escuchando los residuos, entonces manejamos el menú con la función correspondiente 
             if ("HEAR_RESI") in menu:
                 self.__menu_hresi(menu.rsplit(' ', 1)[1])
+            #Si estamos escuchando los residuos por rango, entonces manejamos el menú con la función correspondiente 
+            if ("HEAR_RESRANGE") in menu:
+                self.__menu_hresrange(menu.rsplit(' ', 1)[1])
             #Manejamos el dictado del nombre de la selección con la función correspondiente
             else:
                 self.__menu_hsel(menu.rsplit(' ', 1)[1])
