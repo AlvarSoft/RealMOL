@@ -43,12 +43,14 @@ namespace RealMOL
         private string molCode = ""; //Variable que guarda el código de una molécula que es dictada
         private string selName = ""; //Variable que guarda el nombre de la selección que es dictada
         private string resISel = ""; //Variable que guarda los enteros de la selección que está siendo dictada
+        private string resISelRange = ""; //Variable que guarda el rango de residuos de la selección que está siendo dictada
         private string fontSize = ""; //Variable que guarda el tamaño de la fuente que está siendo dictada
         private int menuPage = 1; //Variable que guarda la página actual en la que se encuentra un menú 
         private bool showingTitles = false; //Variable que permite saber si actualmente se están mostrando los títulos de las moleculas
         private bool hearingMol = false; //Variable que permite saber si actualmente se está escuchando una molécula
         private bool hearingSel = false; //Variable que permite saber si actualmente se está escuchando el nombre de una selección
         private bool hearingResI = false; //Variable que permite saber si actualmente se están escuchando los enteros de una selección
+        private bool hearingResRange = false; //Variable que permite saber si actualmente se está escuchando el rango de residuos de una selección
         private bool hearingFontSize = false; //Variable que permite saber si actualmente se está escuchando el tamaño de una fuente
         private bool displayingRayWarning = false; //Variable que permite saber si actualmente se está mostrando una advertencia de ray
         private bool displayingMolList = false; //Variable que permite saber si actualmente se está mostrando la lista de moléculas
@@ -551,11 +553,13 @@ namespace RealMOL
             molCode = "";
             selName = "";
             resISel = "";
+            resISelRange = "";
             menuPage = 1;
             showingTitles = false;
             hearingMol = false;
             hearingSel = false;
             hearingResI = false;
+            hearingResRange = false;
             hearingFontSize = false;
             displayingRayWarning = false;
             displayingMolList = false;
@@ -744,7 +748,7 @@ namespace RealMOL
          */
         private bool InSpecialMenu()
         {
-            return (showingTitles || hearingMol || hearingSel || hearingResI || hearingFontSize || displayingRayWarning || displayingMolList || displayingSelList);
+            return (showingTitles || hearingMol || hearingSel || hearingResI || hearingResRange || hearingFontSize || displayingRayWarning || displayingMolList || displayingSelList);
         }
 
         /*
@@ -1048,6 +1052,35 @@ namespace RealMOL
                         udpClient.Send(sendBytes, sendBytes.Length);
                     }
                 }
+                else if (hearingResRange)
+                {
+                    //Si no hay enteros actualmente se rechaza el comando
+                    if (resISelRange == "")
+                    {
+                        RejectSpeech();
+                    }
+                    else
+                    {
+                        //Si hay más de 1 entero actualmente entonces se elimina de la cadena todo a partir del último signo de -
+                        if (resISelRange.Contains('-'))
+                        {
+                            resISelRange = resISelRange.Remove(resISelRange.LastIndexOf('-'));
+                        }
+                        //Caso contrario se limpia toda la cadena
+                        else
+                        {
+                            resISelRange = "";
+                        }
+                        //Se emite un sonido de espera de comando y se envía el comando al programa en Python
+                        message = "menu " + message + " " + selName + " HEAR_RESRANGE " + resISelRange;
+                        using (SoundPlayer simpleSound = new SoundPlayer("ready.wav"))
+                        {
+                            simpleSound.Play();
+                        }
+                        sendBytes = Encoding.ASCII.GetBytes(message);
+                        udpClient.Send(sendBytes, sendBytes.Length);
+                    }
+                }
                 //Se comprueba si actualmente se está escuchando el tamaño de una fuente
                 else if (hearingFontSize)
                 {
@@ -1122,6 +1155,10 @@ namespace RealMOL
                         {
                             message = "menu " + message + " " + selName + " HEAR_RESI";
                         }
+                        else if (hearingResRange)
+                        {
+                            message = "menu " + message + " " + selName + " HEAR_RESRANGE";
+                        }
                         using (SoundPlayer simpleSound = new SoundPlayer("ready.wav"))
                         {
                             simpleSound.Play();
@@ -1162,6 +1199,33 @@ namespace RealMOL
                         RejectSpeech();
                     }
                 }
+                //Se comprueba si actualmente se están escuchando los enteros de una selección por rango
+                else if (hearingResRange)
+                {
+                    //Se comprueba que este completo el rango, de ser así se forma el comando final, se elimina el menú y se envía el comando.
+                    //Si la respuesta de PyMOL indica que la selección era válida, entonces esta se agrega a la lista de selecciones 
+                    if (resISelRange.Contains('-'))
+                    {
+                        message = message.Replace("IGNOREres", selName);
+                        message = message.Replace("HEAR_SEL_RESRANGE", resISelRange);
+                        tempname = selName;
+                        QuitMenu(true);
+                        sendBytes = Encoding.ASCII.GetBytes(message);
+                        udpClient.Send(sendBytes, sendBytes.Length);
+                        recvBytes = udpServer.Receive(ref endPoint);
+                        if (Encoding.ASCII.GetString(recvBytes).ToString() == "200")
+                        {
+                            selectedList.Add(tempname);
+                            selectedList.Sort();
+                        }
+                    }
+                    //Caso contrario se rechaza el comando 
+                    else
+                    {
+                        RejectSpeech();
+                    }
+                }
+
                 //Se comprueba si actualmente se está escuchando el tamaño de una fuente
                 else if (hearingFontSize)
                 {
@@ -1268,7 +1332,7 @@ namespace RealMOL
                 udpClient.Send(sendBytes, sendBytes.Length);
             }
             //Se comprueba si actualmente se están escuchando los enteros de una selección o el tamaño de una fuente
-            else if (hearingResI || hearingFontSize)
+            else if (hearingResI || hearingResRange || hearingFontSize)
             {
                 //Se comprueba si el carácter es un número, de ser así se maneja el comando con el comando correspondiente
                 if (char.IsNumber(character))
@@ -1381,23 +1445,55 @@ namespace RealMOL
                 return;
             }
             //Se comprueba si actualmente se están escuchando los enteros de una selección y si ya se terminó de escuchar el nombre de la selección, de ser así se añade el número a la selección, se emite un sonido de espera de comando y se envía el comando al programa en Python
-            if (hearingResI && !hearingSel)
+            if ((hearingResI || hearingResRange) && !hearingSel)
             {
-                if (resISel == "")
+                if (hearingResI)
                 {
-                    resISel = number;
+                    if (resISel == "")
+                    {
+                        resISel = number;
+                    }
+                    else
+                    {
+                        resISel += "+" + number;
+                    }
+                    message = "menu " + message + " " + selName + " HEAR_RESI " + resISel;
+                    using (SoundPlayer simpleSound = new SoundPlayer("ready.wav"))
+                    {
+                        simpleSound.Play();
+                    }
+                    sendBytes = Encoding.ASCII.GetBytes(message);
+                    udpClient.Send(sendBytes, sendBytes.Length);
                 }
-                else
+                else if (hearingResRange)
                 {
-                    resISel += "+" + number;
+                    //El rango ya estaba completo, se rechaza el comando
+                    if (resISelRange.Contains('-'))
+                    {
+                        RejectSpeech();
+                    }
+                    else
+                    {
+                        if (resISelRange == "")
+                        {
+                            resISelRange = number;
+                        }
+                        else
+                        {
+                            if (!resISelRange.Contains('-'))
+                            {
+                                resISelRange += "-" + number;
+                            }
+                        }
+                        message = "menu " + message + " " + selName + " HEAR_RESRANGE " + resISelRange;
+                        using (SoundPlayer simpleSound = new SoundPlayer("ready.wav"))
+                        {
+                            simpleSound.Play();
+                        }
+                        sendBytes = Encoding.ASCII.GetBytes(message);
+                        udpClient.Send(sendBytes, sendBytes.Length);
+                    }
                 }
-                message = "menu " + message + " " + selName + " HEAR_RESI " + resISel;
-                using (SoundPlayer simpleSound = new SoundPlayer("ready.wav"))
-                {
-                    simpleSound.Play();
-                }
-                sendBytes = Encoding.ASCII.GetBytes(message);
-                udpClient.Send(sendBytes, sendBytes.Length);
             }
             //Se comprueba si actualmente se están escuchando el tamaño de una fuente
             else if (hearingFontSize)
@@ -1475,6 +1571,12 @@ namespace RealMOL
             else if (message.Contains("HEAR_SEL_RESI"))
             {
                 hearingResI = true;
+                hearingSel = true;
+            }
+            //Se comprueba si el comando requiere que se escuche el nombre de una selección y sus enteros por rango, de ser así se establecen las variables correspondientes
+            else if (message.Contains("HEAR_SEL_RESRANGE"))
+            {
+                hearingResRange = true;
                 hearingSel = true;
             }
             //Se comprueba si el comando requiere que se escuche el tamaño de una fuente, de ser así se establecen las variables correspondientes
