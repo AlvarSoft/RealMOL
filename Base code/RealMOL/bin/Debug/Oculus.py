@@ -49,7 +49,7 @@ class Types(Enum):
     Command = 4
 
 class CommandNode:
-    
+
     """
     Función: init
     Descripción: Constructor de un nodo de árbol de comando
@@ -64,7 +64,7 @@ class CommandNode:
         self.text = nodeText
         self.code = nodeCode
         self.children = []
-        
+
     """
     Función: add_child
     Descripción: Función que añade un hijo a un nodo de árbol de comandos
@@ -78,7 +78,7 @@ class CommandNode:
         child = CommandNode(childType, childText, childCode)
         self.children.append(child)
         return child
-    
+
     """
     Función: add_tree_childs
     Descripción: Función recursiva que recorre el archivo XML y llena el árbol de comandos
@@ -87,7 +87,7 @@ class CommandNode:
     Fecha de modificación: --/--/--
     Entradas: Nodo inicial
     Salidas: Árbol cargado con datos del XML
-    """    
+    """
     def add_tree_childs(self, parent, xmlNode):
         if xmlNode.tag == "menu":
             newNode =  parent.add_child(Types.Menu, xmlNode.getchildren()[0].text, xmlNode.getchildren()[1].text)
@@ -99,7 +99,7 @@ class CommandNode:
                 self.add_tree_childs(newNode, xmlNode.getchildren()[i])
         elif xmlNode.tag == "command":
             newNode = parent.add_child(Types.Command, xmlNode.getchildren()[0].text, xmlNode.getchildren()[1].text)
-   
+
     """
     Función: CreateTree
     Descripción: Función recursiva que recorre el archivo XML y llena el árbol de comandos
@@ -108,14 +108,14 @@ class CommandNode:
     Fecha de modificación: --/--/--
     Entradas: Nodo inicial
     Salidas: Árbol cargado con datos del XML
-    """    
+    """
     def create_tree(self, fileName):
         document = ElementTree.parse(fileName)
         root = document.getroot()
         self.add_tree_childs(self, root)
 
 class RealMOL:
-    
+
     def __init__(self,debug=False):
         #Se crea el árbol de comandos y se carga con los datos del XML
         self.commandTree = CommandNode(Types.Root, "", "")
@@ -242,7 +242,7 @@ class RealMOL:
         if not self.debug:
             pymol.cmd.viewport(1920,1080)
             pymol.cmd.full_screen('on')
-        
+
     """
     Función: print_text
     Descripción: Función que imprime un mensaje de texto en la pantalla de PyMOL
@@ -250,7 +250,7 @@ class RealMOL:
     Fecha de creación: 31/05/15
     Fecha de modificación: --/--/--
     Entradas: text (str, texto a imprimir)
-    Salidas: Mensaje en pantalla 
+    Salidas: Mensaje en pantalla
     """
     def __print_text(self,text):
         #Verificamos si es la primera vez que se muestra el menú
@@ -272,7 +272,7 @@ class RealMOL:
                 cleanText += char
         #Dividimos el texto en líneas
         for line in cleanText.split('\n'):
-            #Hacemos un ciclo que ira en intervalos del tamaño máximo de línea hasta consumir toda la linea 
+            #Hacemos un ciclo que ira en intervalos del tamaño máximo de línea hasta consumir toda la linea
             for i in range (0, len(line), MAXLINESIZE):
                 #Obtenemos la posición en donde se imprimirá el texto
                 newPosition = list(POSITION)
@@ -299,7 +299,7 @@ class RealMOL:
     Fecha de creación: 31/05/15
     Fecha de modificación: --/--/--
     Entradas: mollist (dict, lista de moléculas junto con su descripcion)
-    Salidas: Mensaje en pantalla 
+    Salidas: Mensaje en pantalla
     """
     def __menu_titles(self):
         #Variable que guarda el texto del menú
@@ -308,14 +308,14 @@ class RealMOL:
         if len(self.mollist.items()) == 0:
             menuText += "No hay moleculas\n"
             menuText += "\n \n   Aceptar"
-        #Caso contrario, se guarda el nombre de la molécula junto con su descripción en el texto del menú    
+        #Caso contrario, se guarda el nombre de la molécula junto con su descripción en el texto del menú
         else:
             for k, v in self.mollist.items():
                 menuText += k + ".- " + v + "\n"
             menuText += "\n \n                       Aceptar"
         #Se imprime el menú
         self.__print_text(menuText)
-    
+
     """
     Función: menu_mcode
     Descripción: Función que imprime la pantalla de dictado de moléculas
@@ -323,7 +323,7 @@ class RealMOL:
     Fecha de creación: 31/05/15
     Fecha de modificación: --/--/--
     Entradas: code (str, el código que hasta ahora se ha dictado)
-    Salidas: Mensaje en pantalla 
+    Salidas: Mensaje en pantalla
     """
     def __menu_mcode(self, code):
         #Se carga el menú con su texto inicial
@@ -349,19 +349,19 @@ class RealMOL:
     Fecha de creación: 31/05/15
     Fecha de modificación: --/--/--
     Entradas: res (str, los números que hasta ahora se han dictado)
-    Salidas: Mensaje en pantalla 
+    Salidas: Mensaje en pantalla
     """
     def __menu_hresi(self, res):
         #Se carga el menú con su texto inicial
         menuText = "Dicte los numeros de los residuos\n \n"
-        #Se comprueba que se haya dictado al menos un número 
+        #Se comprueba que se haya dictado al menos un número
         if not res.startswith("HEAR_RESI"):
             #Se imprimen los números
             menuText += res
             #Si los números no están vacíos entonces se imprime la opción de aceptar
             if len(res) > 0:
                 menuText += "\n \nBorrar  Cancelar  Aceptar"
-            #Caso contrario se imprimen solo las opciones básicas        
+            #Caso contrario se imprimen solo las opciones básicas
             else:
                 menuText += "\n \nBorrar  Cancelar"
         #Caso contrario se imprimen solo las opciones básicas
@@ -369,7 +369,7 @@ class RealMOL:
             menuText += "\n \n \nBorrar  Cancelar"
         #Se imprime el menú
         self.__print_text(menuText)
-        
+
     """
     Función: menu_hresrange
     Descripción: Función que imprime la pantalla de dictado del rango de los residuos
@@ -377,19 +377,19 @@ class RealMOL:
     Fecha de creación: 13/09/15
     Fecha de modificación: --/--/--
     Entradas: res (str, el rango que hasta ahora se han dictado)
-    Salidas: Mensaje en pantalla 
+    Salidas: Mensaje en pantalla
     """
     def __menu_hresrange(self, res):
         #Se carga el menú con su texto inicial
         menuText = "Dicte el rango de los residuos\n \n"
-        #Se comprueba que se haya dictado al menos un número 
+        #Se comprueba que se haya dictado al menos un número
         if not res.startswith("HEAR_RESRANGE"):
             #Se imprimen los números
             menuText += res
             #Si el rango está completo entonces se imprime la opción de aceptar
             if '-' in res:
                 menuText += "\n \nBorrar  Cancelar  Aceptar"
-            #Caso contrario se imprimen solo las opciones básicas        
+            #Caso contrario se imprimen solo las opciones básicas
             else:
                 menuText += "\n \nBorrar  Cancelar"
         #Caso contrario se imprimen solo las opciones básicas
@@ -397,7 +397,7 @@ class RealMOL:
             menuText += "\n \n \nBorrar  Cancelar"
         #Se imprime el menú
         self.__print_text(menuText)
-    
+
     """
     Función: menu_hsel
     Descripción: Función que imprime la pantalla de dictado del nombre de la selección
@@ -405,7 +405,7 @@ class RealMOL:
     Fecha de creación: 31/05/15
     Fecha de modificación: --/--/--
     Entradas: sel (str, el nombre de la selección hasta ahora)
-    Salidas: Mensaje en pantalla 
+    Salidas: Mensaje en pantalla
     """
     def __menu_hsel(self, sel):
         #Se carga el menú con su texto inicial
@@ -420,12 +420,12 @@ class RealMOL:
             #Caso contrario se imprimen solo las opciones básicas
             else:
                 menuText += "\n \nBorrar  Cancelar"
-        #Caso contrario se imprimen solo las opciones básicas    
+        #Caso contrario se imprimen solo las opciones básicas
         else:
             menuText += "\n \n \nBorrar  Cancelar"
-        #Se imprime el menú    
+        #Se imprime el menú
         self.__print_text(menuText)
-    
+
     """
     Función: menu_hfsize
     Descripción: Función que imprime la pantalla de dictado del tamaño de fuente
@@ -433,7 +433,7 @@ class RealMOL:
     Fecha de creación: 31/05/15
     Fecha de modificación: --/--/--
     Entradas: size (str, el tamaño de la fuente hasta ahora)
-    Salidas: Mensaje en pantalla 
+    Salidas: Mensaje en pantalla
     """
     def __menu_hfsize(self, size):
         #Se carga el menú con su texto inicial
@@ -448,12 +448,12 @@ class RealMOL:
             #Caso contrario se imprimen solo las opciones básicas
             else:
                 menuText += "\n \nBorrar  Cancelar"
-        #Caso contrario se imprimen solo las opciones básicas    
+        #Caso contrario se imprimen solo las opciones básicas
         else:
             menuText += "\n \n \nBorrar  Cancelar"
-        #Se imprime el menú    
+        #Se imprime el menú
         self.__print_text(menuText)
-        
+
     """
     Función: menu_ray
     Descripción: Descripción: Función que imprime la advertencia de usar el comando ray
@@ -461,16 +461,16 @@ class RealMOL:
     Fecha de creación: 23/08/15
     Fecha de modificación: --/--/--
     Entradas: --
-    Salidas: Mensaje en pantalla 
+    Salidas: Mensaje en pantalla
     """
     def __menu_ray(self):
         #Se carga el menú con su texto
         menuText = "Advertencia.- La renderizacion se pierde al usar \n"
         menuText += "cualquier comando, por lo que los comandos seran \n"
         menuText += "bloqueados hasta que usted diga -Continuar- \n \n        Cancelar     Aceptar"
-        #Se imprime el menú    
+        #Se imprime el menú
         self.__print_text(menuText)
-        
+
     """
     Función: menu_list_mol
     Descripción: Descripción: Función que imprime la lista de moléculas para elegir
@@ -480,34 +480,37 @@ class RealMOL:
     Entradas: page (int, la página actual)
     Salidas: Mensaje en pantalla
     """
-    def __menu_list_mol(self, page):
+    def __menu_list_mol(self, page, option):
         #Se comprueba si no hay moléculas cargadas, de ser así se le informa al usuario en el texto del menú
         if len(self.mollist.items()) == 0:
             menuText = "No hay moleculas\n"
             menuText += "\n \n   Cancelar"
         #Caso contrario se enumeran las moléculas
-        else:  
+        else:
             #Se carga el menú con su texto inicial
             menuText = "Mencione el numero de la molecula\n \n"
             #Se obtiene el punto de partida para hacer el listado de moléculas
             start = (page-1)*MAXLIST
-            #Se obtiene el punto de partida para hacer el listado de moléculas 
+            #Se obtiene el punto de partida para hacer el listado de moléculas
             if len(self.mollist.items()[start:]) < MAXLIST:
                 end = len(self.mollist.items())
             else:
                 end = start+MAXLIST
             #Se itera sobre las moléculas a listar, y se van añadiendo al texto del menú con su número correspondiente
             for i in range (start, end):
-                 menuText += str(i-start+1) + ".- " + sorted(self.mollist.items())[i][0] + "\n"
+                if (i-start+1 == option):
+                    menuText += str(i-start+1) + ".- " + sorted(self.mollist.items())[i][0] + " <--\n"
+                else:
+                    menuText += str(i-start+1) + ".- " + sorted(self.mollist.items())[i][0] + "\n"
             #Se comprueba si son necesarias más de 1 página para listar todas las moleculas, de ser así se imprime el pie de menú correspondiente
             if len(self.mollist.items()) > MAXLIST:
                 menuText += "\n \n <- Anterior Cancelar Siguiente ->"
             #Caso contrario, solo se imprime la opción de cancelar
             else:
-                menuText += "\n \n             Cancelar"        
-        #Se imprime el menú         
+                menuText += "\n \n             Cancelar"
+        #Se imprime el menú
         self.__print_text(menuText)
-        
+
         """
     Función: menu_list_sel
     Descripción: Descripción: Función que imprime la lista de selecciones para elegir
@@ -517,33 +520,36 @@ class RealMOL:
     Entradas: page (int, la página actual)
     Salidas: Mensaje en pantalla
     """
-    def __menu_list_sel(self, page):
+    def __menu_list_sel(self, page, option):
         sel_list = pymol.cmd.get_names("selections")
         #Se comprueba si no hay selecciones cargadas, de ser así se le informa al usuario en el texto del menú
         if len(sel_list) == 0:
             menuText = "No hay selecciones"
             menuText += "\n \n   Cancelar"
         #Caso contrario se enumeran las selecciones
-        else:  
+        else:
             #Se carga el menú con su texto inicial
             menuText = "Mencione el numero de la seleccion\n \n"
             #Se obtiene el punto de partida para hacer el listado de selecciones
             start = (page-1)*MAXLIST
-            #Se obtiene el punto de partida para hacer el listado de selecciones 
+            #Se obtiene el punto de partida para hacer el listado de selecciones
             if len(sel_list[start:]) < MAXLIST:
                 end = len(sel_list)
             else:
                 end = start+MAXLIST
             #Se itera sobre las selecciones a listar, y se van añadiendo al texto del menú con su número correspondiente
             for i in range (start, end):
-                 menuText += str(i-start+1) + ".- " + sorted(sel_list)[i] + "\n"
+                if (i-start+1 == option):
+                    menuText += str(i-start+1) + ".- " + sorted(sel_list)[i] + " <--\n"
+                else:
+                    menuText += str(i-start+1) + ".- " + sorted(sel_list)[i] + "\n"
             #Se comprueba si son necesarias más de 1 página para listar todas las selecciones, de ser así se imprime el pie de menú correspondiente
             if len(sel_list) > MAXLIST:
                 menuText += "\n \n <- Anterior Cancelar Siguiente ->"
             #Caso contrario, solo se imprime la opción de cancelar
             else:
-                menuText += "\n \n             Cancelar"        
-        #Se imprime el menú         
+                menuText += "\n \n             Cancelar"
+        #Se imprime el menú
         self.__print_text(menuText)
 
     """
@@ -565,7 +571,7 @@ class RealMOL:
         else:
             self.firstmenu = False
             pymol.cmd.delete(TEXTNAME)
-        #Si el menú debe eliminarse entonces reestablecemos la cámara y el color de fondo, y la función termina    
+        #Si el menú debe eliminarse entonces reestablecemos la cámara y el color de fondo, y la función termina
         if menu == "clear":
             pymol.cmd.set_view(self.backupView)
             pymol.cmd.bg_color(self.color)
@@ -578,12 +584,12 @@ class RealMOL:
         elif "HEAR_MOL" in menu:
             self.__menu_mcode(menu.rsplit(' ', 1)[1])
             return
-        #Si estamos escuchando una selección entonces comprobamos en qué fase de este proceso nos encontramos    
+        #Si estamos escuchando una selección entonces comprobamos en qué fase de este proceso nos encontramos
         elif "HEAR_SEL" in menu:
-            #Si estamos escuchando los residuos, entonces manejamos el menú con la función correspondiente 
+            #Si estamos escuchando los residuos, entonces manejamos el menú con la función correspondiente
             if ("HEAR_RESI") in menu:
                 self.__menu_hresi(menu.rsplit(' ', 1)[1])
-            #Si estamos escuchando los residuos por rango, entonces manejamos el menú con la función correspondiente 
+            #Si estamos escuchando los residuos por rango, entonces manejamos el menú con la función correspondiente
             if ("HEAR_RESRANGE") in menu:
                 self.__menu_hresrange(menu.rsplit(' ', 1)[1])
             #Manejamos el dictado del nombre de la selección con la función correspondiente
@@ -601,23 +607,23 @@ class RealMOL:
             return
         #Si estamos mostrando la lista de moléculas, entonces manejamos el menú con la función correspondiente y la función actual termina
         elif "LIST_MOL" in menu:
-            self.__menu_list_mol(int(menu.rsplit(' ', 1)[1]))
+            self.__menu_list_mol(int(menu.rsplit(' ', 2)[1]), int(menu.rsplit(' ', 2)[2]))
             return
         #Si estamos mostrando la lista de selecciones, entonces manejamos el menú con la función correspondiente y la función actual termina
         elif "LIST_SEL" in menu:
-            self.__menu_list_sel(int(menu.rsplit(' ', 1)[1]))
+            self.__menu_list_sel(int(menu.rsplit(' ', 2)[1]), int(menu.rsplit(' ', 2)[2]))
             return
         #Se crea la variable que guardara el texto del menú
         menuText = ""
-        #Se obtiene el primer menú del árbol de comandos    
+        #Se obtiene el primer menú del árbol de comandos
         actualNode = self.commandTree.children[0]
-        #Se obtiene el código del menú    
+        #Se obtiene el código del menú
         menuCode = menu.rsplit(' ', 2)[0]
-        #Se obtiene la página del menú    
+        #Se obtiene la página del menú
         pageNumber = int(menu.rsplit(' ', 2)[1])
         #Se obtiene la opción actual del menú
         optionNumber = int(menu.rsplit(' ', 2)[2])
-        #Se busca el nodo con el menú actual    
+        #Se busca el nodo con el menú actual
         for subCommand in menuCode.rsplit(' '):
             for page in actualNode.children:
                 for son in page.children:
@@ -627,7 +633,7 @@ class RealMOL:
         menuText += "Menu - " + actualNode.text + " (Pagina " + str(pageNumber) + ")\n "
         for i, element in enumerate(actualNode.children[pageNumber-1].children):
             menuText += "\n" + str(i+1) + ".- " + element.text
-            #Si estamos obteniendo el texto de la opción actual agregamos al final una marca            
+            #Si estamos obteniendo el texto de la opción actual agregamos al final una marca
             if (i+1 == optionNumber):
                 menuText += " <--"
         if len(actualNode.children) > 1:
@@ -636,7 +642,7 @@ class RealMOL:
             menuText += "\n \n        Cancelar"
         self.__print_text(menuText)
         return
-    
+
     """
     Función: process_command
     Descripción: Función que procesa un comando recibido por parte del Kinect y lo refleja en el Oculus
@@ -658,9 +664,9 @@ class RealMOL:
         elif command.startswith("menu"):
             #Se comprueba si el comando es de menú, de ser así se procesa con la función correspondiente
             self.__handle_menu()
-        #Se comprueba si el usuario desea descargar una molécula 
+        #Se comprueba si el usuario desea descargar una molécula
         elif "fetch" in command:
-            #Se ejecuta el comando 
+            #Se ejecuta el comando
             pymol.cmd.do(command)
             #Comprobamos que la molécula no se encontrara ya en la lista de moléculas cargadas, de ser así se informa al programa en C# que no se cargue la molécula
             if self.data[6:] in self.mollist:
@@ -703,7 +709,7 @@ class RealMOL:
             else:
                 #Se informa al programa en C# que no se encontró la molécula
                 self.sock.sendto("500".encode(), (UDP_IP, OUT_PORT));
-        #Se verifica si el comando es un select        
+        #Se verifica si el comando es un select
         elif "select" in command:
             #Se extrae el nombre de la selección
             sel = command.split(' ')[1]
@@ -711,34 +717,34 @@ class RealMOL:
             if sel in pymol.cmd.get_names("selections"):
                 #Se informa al programa en c# que no debe guardar el nombre de la selección
                 self.sock.sendto("500".encode(), (UDP_IP, OUT_PORT))
-                #Se ejecuta el comando 
+                #Se ejecuta el comando
                 pymol.cmd.do(command)
             #La selección no existia
             else:
-                #Se ejecuta el comando 
+                #Se ejecuta el comando
                 pymol.cmd.do(command)
                 #Se verifica que la selección haya tenido por lo menos un átomo seleccionado, de ser así informa al programa en c#
                 if pymol.cmd.count_atoms("\"" + sel + "\"") > 0:
                     self.sock.sendto("200".encode(), (UDP_IP, OUT_PORT))
-                #Caso contario informa al programa en c# y se libera el nombre de la selección                
+                #Caso contario informa al programa en c# y se libera el nombre de la selección
                 else:
                     self.sock.sendto("500".encode(), (UDP_IP, OUT_PORT))
-                    pymol.cmd.delete(sel)                
+                    pymol.cmd.delete(sel)
         #Se verifica si el comando es un delete
         elif "delete" in command:
-            #Se ejecuta el comando                        
+            #Se ejecuta el comando
             pymol.cmd.do(command)
             #Eliminamos la molécula de la lista de moléculas (aunque podría ser una selección, en cuyo caso no existiría la clave y no se arrojaría un error)
             self.mollist.pop(command.split(' ')[1].upper(), None)
         #Se verifica si el comando es un cambio de color
         elif "bg_color" in command:
-            #Se ejecuta el comando                        
+            #Se ejecuta el comando
             pymol.cmd.do(command)
             #Se guarda el nombre del color solicitado
             self.color = command[9:]
         #Se verifica si el comando es un ray
         elif command == "ray":
-            #Se ejecuta el comando                        
+            #Se ejecuta el comando
             pymol.cmd.do(command)
             #Bloqueamos el uso del movimiento
             self.moveBlocked = True
@@ -756,7 +762,7 @@ class RealMOL:
     Entradas: --
     Salidas: Visualización en el Oculus de moléculas con controles de orientación integrados
     """
-    def main(self): 
+    def main(self):
         while self.running:
             #Si no estamos depurando y el movimiento no esta bloqueado, movemos los objetos de acuerdo al movimiento del Oculus
             if not self.debug and not self.moveBlocked:

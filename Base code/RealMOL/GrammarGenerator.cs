@@ -14,11 +14,11 @@ namespace RealMOL
 
         public static string UNLOCK_COMMAND = "continuar";
 
-        private static char[] CHARACTERS = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' }; //Letras del alfabeto y dígitos numéricos
+        public static char[] CHARACTERS = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' }; //Letras del alfabeto y dígitos numéricos
         public static string[] numbers_sounds = new string[9999];
 
         public static string[] GEOMETRIC_COMMANDS = { "enfocar", "girar", "mover", "rotar" }; //Comandos de control geométrico
-        public static string[] MENU_COMMANDS = { "cancelar", "siguiente", "anterior", "atras", "arriba", "abajo" }; //Comandos para navegar por los menús
+        public static string[] MENU_COMMANDS = { "cancelar", "siguiente", "anterior", "atras", "arriba", "abajo", "nuevo-elemento" }; //Comandos para navegar por los menús
         public static string[] DICTATION_COMMANDS = { "borrar", "aceptar" }; //Comandos para controlar los dictados
         public static string[] CHARACTERS_SOUNDS = { "vocal a", "letra be", "letra ce", "letra de", "vocal e", "letra efe", "letra ge", "letra ache", "vocal i", "letra jota", "letra ka",
                                                        "letra ele", "letra eme", "letra ene", "vocal o", "letra pe", "letra ku", "letra ere", "letra ese", "letra te", "vocal u", "letra uve", 
