@@ -73,9 +73,11 @@ namespace RealMOL
         private bool geometricWaiting = false; //Variable que indica si actualmente se está llevando a cabo un comando geométrico
         private string geometricCommand = ""; //Comando geométrico actual
 
-        private const int SLEEPTIME = 150; //Tiempo de espera entre lectura de botones del control de Xbox 360
+        private const int SLEEPTIME = 400; //Tiempo de espera entre lectura de botones del control de Xbox 360
 
         private const int MAXLIST = 5; //Cantidad máxima de elementos que se muestran en una lista
+        private const int DICTSTEPAN = 5; //Cantidad de elementos que salta el dictado alfanumérico
+        private const int DICTSTEPN = 100; //Cantidad de elementos que salta el dictado numérico
 
         /*
          * Función: GetKinectRecognizer
@@ -833,6 +835,454 @@ namespace RealMOL
         }
 
         /*
+         * Función: HandleAlphaNumericByMenu
+         * Descripción: Función que permite introducir caracteres alfanuméricos mediante comandos de voz distintos al dictado
+         * Autor: Christian Vargas
+         * Fecha de creación: 04/10/15
+         * Fecha de modificación: --/--/--
+         * Entradas: command (string, variable que contiene el comando actual)
+         * Salidas: Menú actualizado en la pantalla del Oculus
+         */
+        private void HandleAlphaNumericByMenu(string command)
+        {
+            //Variable que guarda el código generado
+            string message;
+            //Entero que guarda el índice de la letra actual
+            int index;
+            //Se comprueba si el menú actual es el de la raíz, en caso de ser así se establece el comando correspondiente 
+            if (newCommand == "")
+            {
+                message = commandTree.children.ElementAt(0).code;
+            }
+            //Caso contrario el valor se obtiene buscando en el árbol usando la función correspondiente
+            else
+            {
+                message = GenCodeCommand(newCommand);
+            }
+            //Se comprueba que el comando haya sido valido, de no ser así se termina la ejecución de los menús
+            if (message == "")
+            {
+                QuitMenu(false);
+                Console.WriteLine("Un comando inválido no se detectó antes, invalidado en HandleAlphaNumericByMenu al generar el código del comando, comando:" + newCommand);
+                return;
+            }
+            //Se comprueba si se está escuchando una molécula actualmente
+            if (hearingMol)
+            {
+                //Si actualmente el código de molécula está vacío, entonces se añade la primera letra del alfabeto
+                if (molCode.Length == 0)
+                {
+                    molCode = GrammarGenerator.CHARACTERS[0].ToString();
+                }
+                //Si el usuario solicito una nueva letra se le añade la primera letra del alfabeto siempre y cuando aún quede espacio, caso contrario se rechaza el comando y la función termina
+                else if (command == "nuevo-elemento")
+                {
+                    if (molCode.Length < 4)
+                    {
+                        molCode += GrammarGenerator.CHARACTERS[0].ToString();
+                    }
+                    else
+                    {
+                        RejectSpeech();
+                        return;
+                    }
+                }
+                //Caso contrario se rota la letra actual de forma circular, con una dirección y magnitud dependiente del comando utilizado
+                else
+                {
+                    index = Array.IndexOf(GrammarGenerator.CHARACTERS, molCode[molCode.Length - 1]);
+                    if (command == "anterior")
+                    {
+                        if (index - DICTSTEPAN <= 0)
+                        {
+                            index = GrammarGenerator.CHARACTERS.Length - 1;
+                        }
+                        else
+                        {
+                            index -= DICTSTEPAN;
+                        }
+                    }
+                    if (command == "siguiente")
+                    {
+                        if (index + DICTSTEPAN >= GrammarGenerator.CHARACTERS.Length - 1)
+                        {
+                            index = 0;
+                        }
+                        else
+                        {
+                            index += DICTSTEPAN;
+                        }
+                    }
+                    if (command == "arriba")
+                    {
+                        {
+                            if (index == GrammarGenerator.CHARACTERS.Length - 1)
+                            {
+                                index = 0;
+                            }
+                            else
+                            {
+                                index++;
+                            }
+                        }
+                    }
+                    else if (command == "abajo")
+                    {
+                        if (index == 0)
+                        {
+                            index = GrammarGenerator.CHARACTERS.Length - 1;
+                        }
+                        else
+                        {
+                            index--;
+                        }
+                    }
+                    molCode = (molCode.Remove(molCode.Length - 1)) + GrammarGenerator.CHARACTERS[index];
+                }
+                //Se genera el código del mensaje
+                message = "menu " + message + " " + molCode;
+            }
+            //Se comprueba si se está escuchando una selección actualmente
+            else if (hearingSel)
+            {
+                //Si actualmente el nombre de la selección está vacío o si el usuario solicito una letra nueva, entonces se añade la primera letra del alfabeto
+                if (selName.Length == 0 || command == "nuevo-elemento")
+                {
+                    selName += GrammarGenerator.CHARACTERS[0].ToString();
+                }
+                //Caso contrario se rota la letra actual de forma circular, con una dirección y magnitud dependiente del comando utilizado
+                else
+                {
+                    index = Array.IndexOf(GrammarGenerator.CHARACTERS, selName[selName.Length - 1]);
+                    if (command == "anterior")
+                    {
+                        if (index - DICTSTEPAN <= 0)
+                        {
+                            index = GrammarGenerator.CHARACTERS.Length - 1;
+                        }
+                        else
+                        {
+                            index -= DICTSTEPAN;
+                        }
+                    }
+                    if (command == "siguiente")
+                    {
+                        if (index + DICTSTEPAN >= GrammarGenerator.CHARACTERS.Length - 1)
+                        {
+                            index = 0;
+                        }
+                        else
+                        {
+                            index += DICTSTEPAN;
+                        }
+                    }
+                    if (command == "arriba")
+                    {
+                        {
+                            if (index == GrammarGenerator.CHARACTERS.Length - 1)
+                            {
+                                index = 0;
+                            }
+                            else
+                            {
+                                index++;
+                            }
+                        }
+                    }
+                    else if (command == "abajo")
+                    {
+                        if (index == 0)
+                        {
+                            index = GrammarGenerator.CHARACTERS.Length - 1;
+                        }
+                        else
+                        {
+                            index--;
+                        }
+                    }
+                    selName = (selName.Remove(selName.Length - 1)) + GrammarGenerator.CHARACTERS[index];
+                }
+                //Se genera el código del mensaje
+                message = "menu " + message + " " + selName;
+            }
+            //Se emite el sonido correspondiente a la espera de otro comando y se envía el mensaje
+            using (SoundPlayer simpleSound = new SoundPlayer("ready.wav"))
+            {
+                simpleSound.Play();
+            }
+            sendBytes = Encoding.ASCII.GetBytes(message);
+            udpClient.Send(sendBytes, sendBytes.Length);
+        }
+
+        /*
+          * Función: HandleNumericByMenu
+          * Descripción: Función que permite introducir números mediante comandos de voz distintos al dictado
+          * Autor: Christian Vargas
+          * Fecha de creación: 04/10/15
+          * Fecha de modificación: --/--/--
+          * Entradas: command (string, variable que contiene el comando actual)
+          * Salidas: Menú actualizado en la pantalla del Oculus
+          */
+        private void HandleNumericByMenu(string command)
+        {
+            //Variable que guarda el código generado
+            string message;
+            //Entero que guarda el valor del número actual
+            int actValue;
+            //Se comprueba si el menú actual es el de la raíz, en caso de ser así se establece el comando correspondiente 
+            if (newCommand == "")
+            {
+                message = commandTree.children.ElementAt(0).code;
+            }
+            //Caso contrario el valor se obtiene buscando en el árbol usando la función correspondiente
+            else
+            {
+                message = GenCodeCommand(newCommand);
+            }
+            //Se comprueba que el comando haya sido valido, de no ser así se termina la ejecución de los menús
+            if (message == "")
+            {
+                QuitMenu(false);
+                Console.WriteLine("Un comando inválido no se detectó antes, invalidado en HandleNumericByMenu al generar el código del comando, comando:" + newCommand);
+                return;
+            }
+            //Se comprueba si se está escuchando el entero de una selección actualmente
+            if (hearingResI)
+            {
+                //Si actualmente el número de la selección está vacío, entonces se añade 100
+                if (resISel.Length == 0)
+                {
+                    resISel = "100";
+                }
+                //Si se solicita un nuevo número, se añade 100
+                else if (command == "nuevo-elemento")
+                {
+                    resISel += "+100";
+                }
+                //Caso contrario se rota el número actual de forma circular, con una dirección y magnitud dependiente del comando utilizado
+                else
+                {
+                    actValue = int.Parse(resISel.Substring(resISel.LastIndexOf('+') + 1));
+                    if (command == "anterior")
+                    {
+                        if (actValue - DICTSTEPN <= 0)
+                        {
+                            actValue = 9999;
+                        }
+                        else
+                        {
+                            actValue -= DICTSTEPN;
+                        }
+                    }
+                    if (command == "siguiente")
+                    {
+                        if (actValue + DICTSTEPN >= 9999)
+                        {
+                            actValue = 1;
+                        }
+                        else
+                        {
+                            actValue += DICTSTEPN;
+                        }
+                    }
+                    if (command == "arriba")
+                    {
+                        {
+                            if (actValue == 9999)
+                            {
+                                actValue = 1;
+                            }
+                            else
+                            {
+                                actValue += 1;
+                            }
+                        }
+                    }
+                    else if (command == "abajo")
+                    {
+                        if (actValue == 1)
+                        {
+                            actValue = 9999;
+                        }
+                        else
+                        {
+                            actValue -= 1;
+                        }
+                    }
+                    if (resISel.Contains('+'))
+                    {
+                        resISel = resISel.Remove(resISel.LastIndexOf('+')) + "+" + actValue.ToString();
+                    }
+                    else
+                    {
+                        resISel = actValue.ToString();
+                    }
+                }
+                //Se genera el código del mensaje
+                message = "menu " + message + " " + selName + " HEAR_RESI " + resISel;
+            }
+            //Se comprueba si se está escuchando el entero de un rango actualmente
+            else if (hearingResRange)
+            {
+                //Si actualmente el rango está vacío, entonces se añade 100
+                if (resISelRange.Length == 0)
+                {
+                    resISelRange = "100";
+                }
+                //Si se solicita un nuevo número, se añade 100
+                else if (command == "nuevo-elemento")
+                {
+                    if (!resISelRange.Contains('-'))
+                    {
+                        resISelRange += "-100";
+                    }
+                    else
+                    {
+                        RejectSpeech();
+                        return;
+                    }
+                }
+                //Caso contrario se rota el número actual de forma circular, con una dirección y magnitud dependiente del comando utilizado
+                else
+                {
+                    actValue = int.Parse(resISelRange.Substring(resISelRange.LastIndexOf('-') + 1));
+                    if (command == "anterior")
+                    {
+                        if (actValue - DICTSTEPN <= 0)
+                        {
+                            actValue = 9999;
+                        }
+                        else
+                        {
+                            actValue -= DICTSTEPN;
+                        }
+                    }
+                    if (command == "siguiente")
+                    {
+                        if (actValue + DICTSTEPN >= 9999)
+                        {
+                            actValue = 1;
+                        }
+                        else
+                        {
+                            actValue += DICTSTEPN;
+                        }
+                    }
+                    if (command == "arriba")
+                    {
+                        {
+                            if (actValue == 9999)
+                            {
+                                actValue = 1;
+                            }
+                            else
+                            {
+                                actValue += 1;
+                            }
+                        }
+                    }
+                    else if (command == "abajo")
+                    {
+                        if (actValue == 1)
+                        {
+                            actValue = 9999;
+                        }
+                        else
+                        {
+                            actValue -= 1;
+                        }
+                    }
+                    if (resISelRange.Contains('-'))
+                    {
+                        resISelRange = resISelRange.Remove(resISelRange.LastIndexOf('-')) + "-" + actValue.ToString();
+                    }
+                    else
+                    {
+                        resISelRange = actValue.ToString();
+                    }
+                }
+                //Se genera el código del mensaje
+                message = "menu " + message + " " + selName + " HEAR_RESRANGE " + resISelRange;
+            }
+            //Se comprueba si se está escuchando el tamaño de una fuente
+            else if (hearingFontSize)
+            {
+                //Si actualmente la fuente esta vacía, entonces se añade 10
+                if (fontSize.Length == 0)
+                {
+                    fontSize = "10";
+                }
+                //Si se solicita un nuevo número, se rechaza el comando
+                else if (command == "nuevo-elemento")
+                {
+                    RejectSpeech();
+                    return;
+                }
+                //Caso contrario se rota el número actual de forma circular, con una dirección y magnitud dependiente del comando utilizado
+                else
+                {
+                    actValue = int.Parse(fontSize);
+                    if (command == "anterior")
+                    {
+                        if (actValue - DICTSTEPN <= 0)
+                        {
+                            actValue = 9999;
+                        }
+                        else
+                        {
+                            actValue -= DICTSTEPN;
+                        }
+                    }
+                    if (command == "siguiente")
+                    {
+                        if (actValue + DICTSTEPN >= 9999)
+                        {
+                            actValue = 1;
+                        }
+                        else
+                        {
+                            actValue += DICTSTEPN;
+                        }
+                    }
+                    if (command == "arriba")
+                    {
+                        {
+                            if (actValue == 9999)
+                            {
+                                actValue = 1;
+                            }
+                            else
+                            {
+                                actValue += 1;
+                            }
+                        }
+                    }
+                    else if (command == "abajo")
+                    {
+                        if (actValue == 1)
+                        {
+                            actValue = 9999;
+                        }
+                        else
+                        {
+                            actValue -= 1;
+                        }
+                    }
+                    fontSize = actValue.ToString();
+                }
+                //Se genera el código del mensaje
+                message = "menu " + message + " " + fontSize;
+            }
+            //Se emite el sonido correspondiente a la espera de otro comando y se envía el mensaje
+            using (SoundPlayer simpleSound = new SoundPlayer("ready.wav"))
+            {
+                simpleSound.Play();
+            }
+            sendBytes = Encoding.ASCII.GetBytes(message);
+            udpClient.Send(sendBytes, sendBytes.Length);
+        }
+
+        /*
          * Función: HandleCommandByNumber
          * Descripción: Función que maneja los comandos del menú por numero
          * Autor: Christian Vargas
@@ -1029,6 +1479,16 @@ namespace RealMOL
                     newCommand = "";
                     StartMainMenu();
                 }
+            }
+            //Se comprueba si se está escuchando un código de molécula o un nombre de selección, de ser así se maneja con la función correspondiente
+            else if (hearingMol || hearingSel)
+            {
+                HandleAlphaNumericByMenu(command);
+            }
+            //Se comprueba si se están escuchando los enteros de una selección, un rango o un tamaño de fuente, de ser así se maneja con la función correspondiente
+            else if (hearingResI || hearingResRange || hearingFontSize)
+            {
+                HandleNumericByMenu(command);
             }
             //Si el menú es uno de los menús especiales sin posibilidad de páginas se rechaza el comando
             else if (InSpecialMenu() && !InListingMenu())
@@ -1322,7 +1782,6 @@ namespace RealMOL
                         RejectSpeech();
                     }
                 }
-
                 //Se comprueba si actualmente se está escuchando el tamaño de una fuente
                 else if (hearingFontSize)
                 {
@@ -1355,7 +1814,7 @@ namespace RealMOL
                 //Caso contrario se maneja el comando por número.
                 else
                 {
-                    HandleCommandByNumber(newCommand, menuOption);
+                    HandleCharacterCommands(GrammarGenerator.CHARACTERS_SOUNDS[menuOption + 26]);
                 }
             }
         }
@@ -1700,7 +2159,10 @@ namespace RealMOL
             else if (message.Contains("QUIT"))
             {
                 timer_ControlPyMOL.Enabled = false;
-                speechRecognizer.RecognizeAsyncCancel();
+                if (sensor != null && sensor.Status == KinectStatus.Connected)
+                {
+                    speechRecognizer.RecognizeAsyncCancel();
+                }
                 EnableWindowInput();
             }
             //Se comprueba si el comando está listo para ser procesado por PyMOL, de ser así se limpia el comando y se elimina el menú
@@ -1930,6 +2392,13 @@ namespace RealMOL
                 else if (controlState.Gamepad.Buttons.HasFlag(GamepadButtonFlags.DPadDown))
                 {
                     HandleMenuCommands("abajo");
+                    //Se hace una pausa para no detectar más de una vez el botón
+                    Thread.Sleep(SLEEPTIME);
+                }
+                //Si el usuario presiona el botón LB, lo manejamos como si dijera nuevo-elemento 
+                else if (controlState.Gamepad.Buttons.HasFlag(GamepadButtonFlags.LeftShoulder))
+                {
+                    HandleMenuCommands("nuevo-elemento");
                     //Se hace una pausa para no detectar más de una vez el botón
                     Thread.Sleep(SLEEPTIME);
                 }
