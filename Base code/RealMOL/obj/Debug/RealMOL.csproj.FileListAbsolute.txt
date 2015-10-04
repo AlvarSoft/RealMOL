@@ -75,3 +75,5 @@ C:\Users\Christian010\Documents\GitHub\RealMOL\Base code\RealMOL\obj\Debug\RealM
 C:\Users\Christian010\Documents\GitHub\RealMOL\Base code\RealMOL\obj\Debug\RealMOL.csproj.GenerateResource.Cache
 C:\Users\Christian010\Documents\GitHub\RealMOL\Base code\RealMOL\obj\Debug\RealMOL.exe
 C:\Users\Christian010\Documents\GitHub\RealMOL\Base code\RealMOL\obj\Debug\RealMOL.pdb
+C:\Users\Christian010\Documents\GitHub\RealMOL\Base code\RealMOL\bin\Debug\Microsoft.Kinect.dll
+C:\Users\Christian010\Documents\GitHub\RealMOL\Base code\RealMOL\bin\Debug\Microsoft.Kinect.xml

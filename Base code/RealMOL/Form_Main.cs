@@ -46,6 +46,7 @@ namespace RealMOL
         private string resISelRange = ""; //Variable que guarda el rango de residuos de la selección que está siendo dictada
         private string fontSize = ""; //Variable que guarda el tamaño de la fuente que está siendo dictada
         private int menuPage = 1; //Variable que guarda la página actual en la que se encuentra un menú 
+        private int menuOption = 1; //Variable que guarda la opción actual en la que se encuentra un menú
         private bool showingTitles = false; //Variable que permite saber si actualmente se están mostrando los títulos de las moleculas
         private bool hearingMol = false; //Variable que permite saber si actualmente se está escuchando una molécula
         private bool hearingSel = false; //Variable que permite saber si actualmente se está escuchando el nombre de una selección
@@ -535,7 +536,7 @@ namespace RealMOL
                 simpleSound.Play();
             }
             waiting = true;
-            sendBytes = Encoding.ASCII.GetBytes("menu " + commandTree.children.ElementAt(0).code + " " + menuPage.ToString());
+            sendBytes = Encoding.ASCII.GetBytes("menu " + commandTree.children.ElementAt(0).code + " " + menuPage.ToString() + " " + menuOption.ToString());
             udpClient.Send(sendBytes, sendBytes.Length);
         }
 
@@ -555,6 +556,7 @@ namespace RealMOL
             resISel = "";
             resISelRange = "";
             menuPage = 1;
+            menuOption = 1;
             showingTitles = false;
             hearingMol = false;
             hearingSel = false;
@@ -613,6 +615,7 @@ namespace RealMOL
             {
                 return (int)Math.Ceiling(downloadedMol.Count() / (float)MAXLIST);
             }
+            //Si estamos mostrando una lista de selecciones, entonces devolvemos la cantidad de páginas en las que se mostraran
             else if (displayingSelList)
             {
 
@@ -645,6 +648,70 @@ namespace RealMOL
                 if (count == fullCommand.Split(' ').Count())
                 {
                     return actualNode.children.Count;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+        }
+
+        /*
+         * Función: GetOptionCount
+         * Descripción: Función que obtiene la cantidad de opciones en un menú
+         * Autor: Christian Vargas
+         * Fecha de creación: 04/10/15
+         * Fecha de modificación: --/--/--
+         * Entradas: fullComand (string, variable que contiene el comando que lleva al menú)
+         * Salidas: (int, valor que indica cuantas opciones tiene el menú, 0 si el comando fue inválido)
+         */
+        private int GetOptionCount(string fullCommand)
+        {
+            //Si estamos mostrando una lista de moléculas, entonces devolvemos la cantidad de opciones que se pueden mostrar en la página actual
+            if (displayingMolList)
+            {
+                if ((downloadedMol.Count() - ((menuPage - 1) * MAXLIST)) > MAXLIST)
+                {
+                    return MAXLIST;
+                }
+                return (downloadedMol.Count() - ((menuPage - 1) * MAXLIST));
+            }
+            //Si estamos mostrando una lista de selecciones, entonces devolvemos la cantidad de opciones que se pueden mostrar en la página actual
+            else if (displayingSelList)
+            {
+                if ((selectedList.Count() - ((menuPage - 1) * MAXLIST)) > MAXLIST)
+                {
+                    return MAXLIST;
+                }
+                return (selectedList.Count() - ((menuPage - 1) * MAXLIST));
+            }
+            //Caso contrario, buscamos la cantidad de opciones para una página del árbol de comandos
+            else
+            {
+                //Se inicia una variable en 0 que permite saber cuántos subcomandos han sido reconocidos exitosamente
+                int count = 0;
+                //Se inicia el nodo actual en el menú raíz del árbol de comandos
+                CommandNode actualNode = commandTree.children.ElementAt(0);
+                //Se parte el comando completo en subcomandos que esta separados por espacios en blanco, por cada comando se busca encontrar su nodo correspondiente en el árbol de comandos
+                foreach (string subCommand in fullCommand.Split(' '))
+                {
+                    foreach (CommandNode page in actualNode.children)
+                    {
+                        foreach (CommandNode son in page.children)
+                        {
+                            if (son.text == subCommand)
+                            {
+                                //Si el texto del hijo actual corresponde con el subcomando se establece el nodo actual en el hijo y se aumenta la cantidad de subcomandos reconocidos 
+                                actualNode = son;
+                                count++;
+                            }
+                        }
+                    }
+                }
+                //Si la cantidad de subcomandos reconocidos es igual a la cantidad de subcomandos entonces el comando era válido, se regresa el total de opciones de la página actual del menú, caso contrario se devuelve 0    
+                if (count == fullCommand.Split(' ').Count())
+                {
+                    return actualNode.children.ElementAt(menuPage - 1).children.Count;
                 }
                 else
                 {
@@ -809,7 +876,7 @@ namespace RealMOL
             if (count == fullCommand.Split(' ').Count())
             {
                 //Se comprueba que el numero este dentro del rango valido, de ser así se procesa el comando correspondiente.
-                if (actualNode.children.ElementAt(menuPage - 1).children.Count >= number)
+                if (actualNode.children.Count > 0 && actualNode.children.ElementAt(menuPage - 1).children.Count >= number)
                 {
                     ProcessAudioCommand(actualNode.children.ElementAt(menuPage - 1).children.ElementAt(number - 1).text);
                 }
@@ -843,17 +910,21 @@ namespace RealMOL
             string message;
             //Variable que guarda la cantidad de páginas en el menú actual
             int pageCount;
-            //Se comprueba si el menú actual es el de la raíz, en caso de ser así se establece el comando y la cantidad de páginas correspondientes 
+            //Variable que guarda la cantidad de opciones en el menú actual
+            int optionCount;
+            //Se comprueba si el menú actual es el de la raíz, en caso de ser así se establece el comando y la cantidad de páginas y opciones correspondientes 
             if (newCommand == "")
             {
                 message = commandTree.children.ElementAt(0).code;
                 pageCount = commandTree.children.ElementAt(0).children.Count();
+                optionCount = commandTree.children.ElementAt(0).children.ElementAt(menuPage - 1).children.Count();
             }
             //Caso contrario los valores se obtienen buscando en el árbol usando las funciones correspondientes
             else
             {
-                pageCount = GetPageCount(newCommand);
                 message = GenCodeCommand(newCommand);
+                pageCount = GetPageCount(newCommand);
+                optionCount = GetOptionCount(newCommand);
             }
             //Se comprueba que el comando haya sido valido, de no ser así se termina la ejecución de los menús.
             if (pageCount == 0)
@@ -873,8 +944,9 @@ namespace RealMOL
                 {
                     menuPage++;
                 }
+                menuOption = 1;
             }
-            //Si el comando es anterior se disminuye el número de página de forma circular, evitando un desbordamiento 
+            //Si el comando es anterior se disminuye el número de página de forma circular, evitando un desbordamiento y se establece la opción actual en 1 
             else if (command == "anterior")
             {
                 if (menuPage == 1)
@@ -885,9 +957,34 @@ namespace RealMOL
                 {
                     menuPage--;
                 }
+                menuOption = 1;
             }
-            //Se le agrega al código del comando el identificador de que es un menú y el número de página
-            message = "menu " + message + " " + menuPage;
+            //Si el comando es arriba se disminuye el número de opción de forma circular, evitando un desbordamiento y se establece la opción actual en 1
+            else if (command == "arriba")
+            {
+                if (menuOption == 1)
+                {
+                    menuOption = optionCount;
+                }
+                else
+                {
+                    menuOption--;
+                }
+            }
+            //Si el comando es abajo se aumenta el número de opción de forma circular, evitando un desbordamiento 
+            else if (command == "abajo")
+            {
+                if (menuOption == optionCount)
+                {
+                    menuOption = 1;
+                }
+                else
+                {
+                    menuOption++;
+                }
+            }
+            //Se le agrega al código del comando el identificador de que es un menú, el número de página y el número de opcion
+            message = "menu " + message + " " + menuPage + " " + menuOption;
             //Se emite el sonido correspondiente a la espera de otro comando y se envía el mensaje
             using (SoundPlayer simpleSound = new SoundPlayer("ready.wav"))
             {
@@ -1255,10 +1352,10 @@ namespace RealMOL
                     //Se bloquea la entrada de comandos, ya que ray pierde su efecto si se recibe un comando
                     blocked = true;
                 }
-                //Caso contrario se rechaza el comando 
+                //Caso contrario se maneja el comando por número.
                 else
                 {
-                    RejectSpeech();
+                    HandleCommandByNumber(newCommand, menuOption);
                 }
             }
         }
@@ -1633,7 +1730,7 @@ namespace RealMOL
             //Caso contrario se prepara el comando de menú
             else
             {
-                //Si estamos en un menú sin páginas entonces solo se antepone la palabra menú en el comando, caso contrario también se envía el número de página (establecido en 1)
+                //Si estamos en un menú sin páginas entonces solo se antepone la palabra menú en el comando, caso contrario también se envía el número de página y número de opción (establecidos en 1)
                 if (InSpecialMenu() && !InListingMenu())
                 {
                     message = "menu " + message;
@@ -1641,7 +1738,8 @@ namespace RealMOL
                 else
                 {
                     menuPage = 1;
-                    message = "menu " + message + " " + menuPage;
+                    menuOption = 1;
+                    message = "menu " + message + " " + menuPage + " " + menuOption;
                 }
                 //Se actualiza el comando acumulado
                 if (newCommand == "")
@@ -1750,6 +1848,25 @@ namespace RealMOL
             }
             //Obtenemos el estado del control actual
             State controlState = xboxControl.GetState();
+            //Se comprueba si la entrada está bloqueada, de ser así se comprueba si el usuario quiere desbloquear la entrada, termina la función y devolvemos verdadero
+            if (blocked)
+            {
+                //Si el usuario presiona el botón RB, lo manejamos como si dijera continuar
+                if (controlState.Gamepad.Buttons.HasFlag(GamepadButtonFlags.RightShoulder))
+                {
+                    //Se desbloquea la entrada de comandos y se informa al usuario
+                    blocked = false;
+                    sendBytes = Encoding.ASCII.GetBytes("CONTINUE");
+                    udpClient.Send(sendBytes, sendBytes.Length);
+                    using (SoundPlayer simpleSound = new SoundPlayer("unlock.wav"))
+                    {
+                        simpleSound.Play();
+                    }
+                    //Se hace una pausa para no detectar más de una vez el botón
+                    Thread.Sleep(SLEEPTIME);
+                }
+                return true;
+            }
             //Se comprueba si el botón back está presionado, de ser así se envía un mensaje de terminación y se devuelve falso
             if (controlState.Gamepad.Buttons.HasFlag(GamepadButtonFlags.Back))
             {
@@ -1802,11 +1919,32 @@ namespace RealMOL
                     //Se hace una pausa para no detectar más de una vez el botón
                     Thread.Sleep(SLEEPTIME);
                 }
+                //Si el usuario presiona el botón arriba, lo manejamos como si dijera arriba
+                else if (controlState.Gamepad.Buttons.HasFlag(GamepadButtonFlags.DPadUp))
+                {
+                    HandleMenuCommands("arriba");
+                    //Se hace una pausa para no detectar más de una vez el botón
+                    Thread.Sleep(SLEEPTIME);
+                }
+                //Si el usuario presiona el botón abajo, lo manejamos como si dijera abajo
+                else if (controlState.Gamepad.Buttons.HasFlag(GamepadButtonFlags.DPadDown))
+                {
+                    HandleMenuCommands("abajo");
+                    //Se hace una pausa para no detectar más de una vez el botón
+                    Thread.Sleep(SLEEPTIME);
+                }
+                //Si el usuario presiona el botón RB, lo manejamos como si dijera continuar (es decir se rechaza el comando ya que no es válido si el control esta desbloqueado, esto se hace por consistencia)
+                else if (controlState.Gamepad.Buttons.HasFlag(GamepadButtonFlags.RightShoulder))
+                {
+                    RejectSpeech();
+                    //Se hace una pausa para no detectar más de una vez el botón
+                    Thread.Sleep(SLEEPTIME);
+                }
             }
             //Si no se están esperando comandos...
             else
             {
-                //Informamos al usuario que el programa está listo para recibir comandos de voz, establecemos la variable adecuada y enviamos un comando al programa en Python para solicitar el menú inicial en la página 1
+                //Si se presiona start, informamos al usuario que el programa está listo para recibir comandos de voz, establecemos la variable adecuada y enviamos un comando al programa en Python para solicitar el menú inicial en la página 1
                 if (controlState.Gamepad.Buttons.HasFlag(GamepadButtonFlags.Start))
                 {
                     StartMainMenu();
@@ -1926,20 +2064,26 @@ namespace RealMOL
         private void button_Launch_Click(object sender, EventArgs e)
         {
             /*
-             * Comprobamos que el Kinect esté listo, de ser así se deshabilita la entrada en la ventana, se inicia el programa con PyMOL, 
-             * se inicia el temporizador de controles y se empieza a recibir comandos de voz de forma asíncrona
+             * Comprobamos que el Kinect (o un control) esté listo, de ser así se deshabilita la entrada en la ventana, se inicia el programa con PyMOL, 
+             * se inicia el temporizador de controles (si el control esta listo) y se empieza a recibir comandos de voz de forma asíncrona (si el Kinect esta listo)
              */
-            if (sensor != null && sensor.Status == KinectStatus.Connected)
+            if (sensor != null && sensor.Status == KinectStatus.Connected || xboxControlDetected)
             {
                 DisableWindowInput();
+                if (sensor != null && sensor.Status == KinectStatus.Connected)
+                {
+                    speechRecognizer.RecognizeAsync(RecognizeMode.Multiple);
+                }
+                if (xboxControlDetected)
+                {
+                    timer_ControlPyMOL.Enabled = true;
+                }
                 Process.Start("Oculus.py", "1");
-                timer_ControlPyMOL.Enabled = true;
-                speechRecognizer.RecognizeAsync(RecognizeMode.Multiple);
             }
             else
             {
-                //Se le informa al usuario que Kinect es obligatorio y se comprueban los dispositivos conectados
-                MessageBox.Show("El sensor Kinect debe estar conectado", "¡Advertencia!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                //Se le informa al usuario que Kinect o un control es obligatorio y se comprueban los dispositivos conectados
+                MessageBox.Show("El sensor Kinect (o un control de Xbox 360) debe estar conectado", "¡Advertencia!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 CheckDevices();
             }
         }
@@ -1955,8 +2099,8 @@ namespace RealMOL
          */
         private void timer_ControlPyMOL_Tick(object sender, EventArgs e)
         {
-            //Si el control de Xbox fue detectado y la entrada de comandos no esta bloqueada, se obtiene una actualización de él
-            if (xboxControlDetected && !blocked)
+            //Si el control de Xbox fue detectado, se obtiene una actualización de él
+            if (xboxControlDetected)
             {
                 /*
                  * Si el control informa que el usuario decidió terminar la ejecución de PyMOL, se deshabilita el temporizador, 
@@ -1965,7 +2109,10 @@ namespace RealMOL
                 if (!XboxControlUpdate())
                 {
                     timer_ControlPyMOL.Enabled = false;
-                    speechRecognizer.RecognizeAsyncCancel();
+                    if (sensor != null && sensor.Status == KinectStatus.Connected)
+                    {
+                        speechRecognizer.RecognizeAsyncCancel();
+                    }
                     EnableWindowInput();
                 }
             }
