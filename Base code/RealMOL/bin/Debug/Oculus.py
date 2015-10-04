@@ -612,9 +612,11 @@ class RealMOL:
         #Se obtiene el primer menú del árbol de comandos    
         actualNode = self.commandTree.children[0]
         #Se obtiene el código del menú    
-        menuCode = menu.rsplit(' ', 1)[0]
+        menuCode = menu.rsplit(' ', 2)[0]
         #Se obtiene la página del menú    
-        pageNumber = int(menu.rsplit(' ', 1)[1])
+        pageNumber = int(menu.rsplit(' ', 2)[1])
+        #Se obtiene la opción actual del menú
+        optionNumber = int(menu.rsplit(' ', 2)[2])
         #Se busca el nodo con el menú actual    
         for subCommand in menuCode.rsplit(' '):
             for page in actualNode.children:
@@ -624,7 +626,10 @@ class RealMOL:
         #Se crea el texto del menú tomando en cuenta los elementos en el menú y se imprime
         menuText += "Menu - " + actualNode.text + " (Pagina " + str(pageNumber) + ")\n "
         for i, element in enumerate(actualNode.children[pageNumber-1].children):
-             menuText += "\n" + str(i+1) + ".- " + element.text
+            menuText += "\n" + str(i+1) + ".- " + element.text
+            #Si estamos obteniendo el texto de la opción actual agregamos al final una marca            
+            if (i+1 == optionNumber):
+                menuText += " <--"
         if len(actualNode.children) > 1:
             menuText += "\n \n<- Anterior Cancelar Siguiente ->"
         else:
