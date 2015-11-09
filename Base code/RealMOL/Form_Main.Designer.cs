@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form_Main));
             this.pictureBox_Logo = new System.Windows.Forms.PictureBox();
             this.label_Description = new System.Windows.Forms.Label();
             this.button_Launch = new System.Windows.Forms.Button();
@@ -40,9 +41,11 @@
             // 
             // pictureBox_Logo
             // 
+            this.pictureBox_Logo.Image = global::RealMOL.Properties.Resources.logo;
             this.pictureBox_Logo.Location = new System.Drawing.Point(12, 12);
             this.pictureBox_Logo.Name = "pictureBox_Logo";
             this.pictureBox_Logo.Size = new System.Drawing.Size(128, 128);
+            this.pictureBox_Logo.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.pictureBox_Logo.TabIndex = 0;
             this.pictureBox_Logo.TabStop = false;
             // 
@@ -107,6 +110,7 @@
             this.Controls.Add(this.pictureBox_Logo);
             this.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.MaximizeBox = false;
             this.Name = "Form_Main";
